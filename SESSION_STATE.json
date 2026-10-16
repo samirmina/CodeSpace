@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "Chronos",
+    "workspace": "/home/runner/workspace",
+    "primary_language": "Java",
+    "primary_runtime": "Java 21 + JavaFX 21",
+    "build_system": null,
+    "status": "source_snapshot_documented"
+  },
+  "scan": {
+    "date": "2026-09-24",
+    "completed": true,
+    "source_files": {
+      "main_java": 29,
+      "test_java": 11,
+      "test_methods": 156
+    },
+    "runtime": {
+      "java_available": false,
+      "javafx_bundled": false,
+      "postgresql_jdbc_bundled": false,
+      "junit_runner_present": true,
+      "junit_runner": "lib/junit-platform-console-standalone-1.11.4.jar"
+    },
+    "build": {
+      "reproducible_from_repository": false,
+      "main_run_script_present": false,
+      "main_compile_script_present": false,
+      "user_creator_scripts_present": true,
+      "user_creator_scripts_portable": false
+    }
+  },
+  "documentation": {
+    "architecture": "architecture.md",
+    "readme": "readme.md",
+    "decision_log": "DECISION_LOG.md",
+    "session_state": "SESSION_STATE.json"
+  },
+  "architecture_summary": {
+    "entry_points": [
+      "src/Main.java",
+      "user-creator/src/main/java/com/chronos/usercrud/UserCrudApp.java",
+      "user-creator/src/main/java/com/chronos/usercrud/UserCrudCLI.java"
+    ],
+    "main_ui_views": [
+      "LoginView",
+      "MainView",
+      "PomodoroView",
+      "TaskView",
+      "UserView",
+      "ReportView",
+      "SessionsView",
+      "SettingsView"
+    ],
+    "persistence": {
+      "primary": "hand-written JSON persistence",
+      "registry_file": "data_users.json",
+      "per_user_pattern": "data_<userId>.json",
+      "legacy_file": "data.json",
+      "database": "optional PostgreSQL user registry"
+    },
+    "tests_cover": [
+      "domain models",
+      "UserService",
+      "TaskService",
+      "PomodoroService"
+    ],
+    "tests_do_not_cover": [
+      "JsonStorage",
+      "PostgresUserDAO",
+      "migration",
+      "resource loading",
+      "JavaFX views",
+      "end-to-end persistence"
+    ]
+  },
+  "discrepancies": [
+    {
+      "id": "D-001",
+      "severity": "critical",
+      "status": "confirmed",
+      "summary": "No reproducible main-project build or run configuration."
+    },
+    {
+      "id": "D-002",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "user-creator batch scripts contain machine-specific Windows paths."
+    },
+    {
+      "id": "D-003",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "Stale compiled classes exist beside source files, including classes without Java sources."
+    },
+    {
+      "id": "D-004",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "plan_storeSessions_fix.md describes a fix already present in PomodoroView.complete()."
+    },
+    {
+      "id": "D-005",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "Guest users can reach the Users tab and retain add/delete controls."
+    },
+    {
+      "id": "D-006",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "Task completion does not update the assigned user's completion counter."
+    },
+    {
+      "id": "D-007",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "Priority ordering and urgent-incomplete filtering contradict their comments."
+    },
+    {
+      "id": "D-008",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "Task.completedAt is displayed but not serialized by JsonStorage."
+    },
+    {
+      "id": "D-009",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "JsonStorage has shared mutable state and session-history round-trip gaps."
+    },
+    {
+      "id": "D-010",
+      "severity": "high",
+      "status": "confirmed",
+      "summary": "storeSessions filtering is incomplete in timer and report aggregates."
+    },
+    {
+      "id": "D-011",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "Settings validation and management policy controls are not enforced."
+    },
+    {
+      "id": "D-012",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "Main startup duplicates the PostgreSQL merge and exit persistence path."
+    },
+    {
+      "id": "D-013",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "Legacy and runtime data files have unclear ownership; DUMMY data is present."
+    },
+    {
+      "id": "D-014",
+      "severity": "medium",
+      "status": "confirmed",
+      "summary": "Runtime resources depend on the process working directory."
+    },
+    {
+      "id": "D-015",
+      "severity": "low",
+      "status": "confirmed",
+      "summary": "Dead APIs, unused UI fields, missing source files, and a stale backup remain."
+    }
+  ],
+  "decisions": [
+    "Treat Java source as authoritative and compiled classes as build artifacts.",
+    "Treat the main application and user-creator utility as separate runtime products.",
+    "Describe PostgreSQL as an optional user-registry source with JSON fallback.",
+    "Document the workspace as a source snapshot rather than a self-contained runnable project.",
+    "Enforce storeSessions consistently across service queries, UI displays, and persistence.",
+    "Address persistence, migration, guest authorization, and resource-loading gaps before production use."
+  ],
+  "open_actions": [
+    "Add a portable build/run configuration and dependency setup instructions.",
+    "Remove stale class files and the UserView backup from source-controlled paths.",
+    "Add JsonStorage, migration, DAO, and JavaFX integration tests.",
+    "Clarify guest permissions and persist task completion metadata.",
+    "Make storeSessions filtering consistent in aggregate services.",
+    "Move icon and notification resources to classpath resources or define a stable working-directory contract."
+  ]
+}

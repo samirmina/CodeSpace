@@ -1,0 +1,38 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "permission": {
+    "bash": {
+      "stat *": "allow",
+      "java *": "allow",
+      "javac *": "allow",
+      "test *": "allow",
+      "printf *": "allow",
+      "rg *": "allow",
+      "wc *": "allow",
+      "python3 *": "allow",
+      "find *": "allow",
+      "echo *": "allow",
+      "which *": "allow",
+      "mvn --version *": "allow",
+      "psql --version *": "allow",
+      "ls *": "allow",
+      "apt-cache *": "allow",
+      "head *": "allow",
+      "mkdir *": "allow",
+      "initdb *": "allow",
+      "tail *": "allow",
+      "pg_ctl *": "allow",
+      "chmod *": "allow",
+      "createdb *": "allow",
+      "psql -h *": "allow",
+      "createuser *": "allow",
+      "mvn clean *": "allow",
+      "sed *": "allow",
+      "mvn dependency:get *": "allow",
+      "mvn javafx:run *": "allow"
+    },
+    "external_directory": {
+      "/run/*": "allow"
+    }
+  }
+}

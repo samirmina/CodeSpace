@@ -1,0 +1,10 @@
+# Chronos Database Configuration
+# Copy to config.properties and modify as needed
+
+db.url=jdbc:postgresql://localhost:5432/chronos
+db.user=postgres
+db.password=postgres
+
+# Application settings
+app.data.dir=.
+app.auto.save.interval=30

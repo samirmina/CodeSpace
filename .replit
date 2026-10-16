@@ -1,0 +1,10 @@
+modules = [
+  "jdk-21",
+  "maven",
+  "postgresql_16"
+]
+
+run = "mvn clean javafx:run"
+
+[nix]
+packages = ["maven", "xvfb-run"]

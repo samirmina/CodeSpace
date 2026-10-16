@@ -1,0 +1,61 @@
+# Compiled class files
+**/*.class
+
+# Maven target directory
+target/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Application data files (generated at runtime)
+data_*.json
+data.json
+data.json.bak
+
+# Logs
+*.log
+
+# Package output
+*.dmg
+*.exe
+*.msi
+*.deb
+*.rpm
+*.app
+
+# JPackage output
+target/jpackage/
+
+# Local config (copy from config.properties.example)
+config.properties
+
+# Test reports
+target/surefire-reports/
+target/failsafe-reports/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Bundled runtime distributions (not source)
+pgsql/
+ms-21.0.10/
+apache-maven-3.9.16/
+javafx/
+bin/
+boot/
+conf/
+lib/
+pgdata/
