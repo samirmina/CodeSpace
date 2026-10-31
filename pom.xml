@@ -19,6 +19,7 @@
         <javafx.version>21.0.1</javafx.version>
         <junit.version>5.10.2</junit.version>
         <postgresql.version>42.7.3</postgresql.version>
+        <spring-boot.version>3.3.0</spring-boot.version>
         <main.class>Main</main.class>
     </properties>
 
@@ -79,6 +80,24 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -91,6 +110,7 @@
                     <include>**/*.css</include>
                     <include>**/*.png</include>
                     <include>**/*.properties</include>
+                    <include>**/*.html</include>
                 </includes>
             </resource>
         </resources>
@@ -215,6 +235,23 @@
                         <argument>--enable-preview</argument>
                     </arguments>
                 </configuration>
+            </plugin>
+
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>web.ChronosWebApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chronos-postgres
+    environment:
+      POSTGRES_DB: chronos
+      POSTGRES_USER: chronos
+      POSTGRES_PASSWORD: chronos
+    volumes:
+      - chronos_pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chronos -d chronos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chronos-network
+
+  chronos-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: chronos-web
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/chronos
+      DB_USER: chronos
+      DB_PASSWORD: chronos
+      APP_DATA_DIR: /app/data
+      DISPLAY: ${DISPLAY:-:0}
+    ports:
+      - "8080:8080"
+    volumes:
+      - chronos_data:/app/data
+    networks:
+      - chronos-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  chronos_pgdata:
+  chronos_data:
+
+networks:
+  chronos-network:
+    driver: bridge
