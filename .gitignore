@@ -72,3 +72,6 @@ logs/
 # Kilo agent configuration (not project source)
 .agents/
 .config/user-creator/*
+.config/
+.github/workflows/
+user-creator/

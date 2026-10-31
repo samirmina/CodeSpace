@@ -1,4 +1,24 @@
-FROM eclipse-temurin:21-jdk
+# ============================================================================
+# Build stage — compile the Spring Boot JAR inside Docker
+# ============================================================================
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
+
+WORKDIR /build
+
+# Copy only the POM first to leverage Docker layer caching
+COPY pom.xml .
+
+# Download dependencies (cached layer if pom.xml unchanged)
+RUN mvn -B dependency:go-offline -DskipTests
+
+# Copy the full source and build
+COPY src ./src
+RUN mvn -B package -DskipTests
+
+# ============================================================================
+# Runtime stage — run the Spring Boot app
+# ============================================================================
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
@@ -18,8 +38,8 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the built JAR
-COPY target/chronos-1.0.0-SNAPSHOT.jar /app/chronos.jar
+# Copy the built JAR from the builder stage
+COPY --from=builder /build/target/chronos-1.0.0-SNAPSHOT.jar /app/chronos.jar
 
 # Expose Spring Boot port
 EXPOSE 8080
