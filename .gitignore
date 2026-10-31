@@ -63,6 +63,9 @@ pgdata/
 # Build output
 out/
 
+# Maven build artifacts
+dependency-reduced-pom.xml
+
 # Runtime logs
 logs/
 
