@@ -59,3 +59,13 @@ boot/
 conf/
 lib/
 pgdata/
+
+# Build output
+out/
+
+# Runtime logs
+logs/
+
+# Kilo agent configuration (not project source)
+.agents/
+.config/
