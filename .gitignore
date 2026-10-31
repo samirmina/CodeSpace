@@ -75,3 +75,10 @@ logs/
 .config/
 .github/workflows/
 user-creator/
+
+.behavior-mcp
+.cursor/
+.gemini/
+.github/copilot-instructions.md
+.windsurfrules
+CLAUDE.md
