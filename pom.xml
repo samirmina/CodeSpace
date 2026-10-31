@@ -209,6 +209,10 @@
                     <vendor>Chronos Team</vendor>
                     <description>Pomodoro &amp; Task Manager</description>
                     <copyright>2024 Chronos Team</copyright>
+                    <type>exe</type>
+                    <winMenu>true</winMenu>
+                    <winMenuGroup>Chronos Team</winMenuGroup>
+                    <shortcut>true</shortcut>
                     <javaOptions>
                         <javaOption>--enable-preview</javaOption>
                     </javaOptions>

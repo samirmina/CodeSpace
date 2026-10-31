@@ -1,9 +1,10 @@
 # Chronos Database Configuration
 # Copy to config.properties and modify as needed
 
+# For Docker Compose deployment (postgres container on same network)
 db.url=jdbc:postgresql://localhost:5432/chronos
-db.user=postgres
-db.password=postgres
+db.user=chronos
+db.password=chronos
 
 # Application settings
 app.data.dir=.
