@@ -22,33 +22,8 @@ services:
     networks:
       - chronos-network
 
-  chronos-web:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: chronos-web
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/chronos
-      DB_USER: chronos
-      DB_PASSWORD: chronos
-      APP_DATA_DIR: /app/data
-      DISPLAY: ${DISPLAY:-:0}
-    ports:
-      - "8080:8080"
-    volumes:
-      - chronos_data:/app/data
-    networks:
-      - chronos-network
-    stdin_open: true
-    tty: true
-
 volumes:
   chronos_pgdata:
-  chronos_data:
 
 networks:
   chronos-network:
