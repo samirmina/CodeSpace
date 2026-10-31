@@ -20,7 +20,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -29,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * WebController - handles all web UI routes with multi-user support.
+ * All data operations are scoped to the currently authenticated user.
+ */
 @Controller
 @RequestMapping("/")
 public class WebController {
@@ -54,17 +57,28 @@ public class WebController {
         this.reportService = reportService;
     }
 
+    // Helper to get current user from session
+    private User getCurrentUser(HttpSession session) {
+        return (User) session.getAttribute("currentUser");
+    }
+
+    private boolean isAuthenticated(HttpSession session) {
+        return session.getAttribute("currentUser") != null;
+    }
+
     // ============ LOGIN / USER SELECTION ============
 
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(HttpSession session, Model model) {
+        if (isAuthenticated(session)) {
+            return "redirect:/timer";
+        }
         model.addAttribute("users", userService.get_all_users());
         return "login";
     }
 
     @PostMapping("/login")
     public String selectUser(@RequestParam(required = false) Integer userId,
-                             @RequestParam(required = false) String guest,
                              HttpServletRequest request) {
         HttpSession session = request.getSession();
         User selected = null;
@@ -77,23 +91,47 @@ public class WebController {
         return "redirect:/timer";
     }
 
+    @GetMapping("/logout")
+    public RedirectView logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute("currentUser");
+            session.removeAttribute("isGuest");
+            session.invalidate();
+        }
+        return new RedirectView("/login");
+    }
+
+    // ============ AUTH CHECK ============
+
+    @ModelAttribute
+    public void addAuthAttributes(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("isAuthenticated", currentUser != null);
+        model.addAttribute("isGuest", currentUser == null);
+        model.addAttribute("userRole", currentUser != null ? currentUser.get_role() : null);
+    }
+
     // ============ TIMER / POMODORO (Tab 1) ============
 
     @GetMapping("/timer")
-    public String timer(Model model,
-                        @SessionAttribute(name = "currentUser", required = false) User currentUser) {
+    public String timer(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
+        long userId = currentUser.get_id();
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
 
         // Default duration
         int defaultDuration = settingsService.getSettings().getDefaultPomodoroDuration();
         model.addAttribute("defaultDuration", defaultDuration);
 
-        // Available tasks for selection
-        List<Task> tasks = taskService.get_all_tasks();
+        // Available tasks for this user
+        List<Task> tasks = taskService.get_all_tasks(userId);
         model.addAttribute("tasks", tasks);
 
-        // Pomodoro stats
+        // Pomodoro stats for this user
         model.addAttribute("totalSessions", pomodoroService.get_total_sessions());
         model.addAttribute("totalFocusMinutes", pomodoroService.get_total_focus_time_minutes());
         model.addAttribute("storedSessions", pomodoroService.get_total_stored_sessions(taskService));
@@ -113,46 +151,55 @@ public class WebController {
     @PostMapping("/timer/start")
     public RedirectView startTimer(@RequestParam Integer taskId,
                                    @RequestParam(required = false) Integer durationMinutes,
-                                   @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        if (currentUser == null) {
-            return new RedirectView("/login");
-        }
+                                   HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
+
         Task task = taskService.try_get_task(taskId).orElse(null);
-        if (task == null) {
-            return new RedirectView("/timer");
-        }
+        if (task == null) return new RedirectView("/timer");
+
         int duration = (durationMinutes != null) ? durationMinutes : settingsService.getSettings().getDefaultPomodoroDuration();
-        pomodoroService.create_pomodoro(taskId, task.get_title(), duration);
+        pomodoroService.create_pomodoro(taskId, task.get_title(), duration, currentUser.get_id());
         pomodoroService.start_session(pomodoroService.count_pomodoros());
         return new RedirectView("/timer");
     }
 
     @PostMapping("/timer/pause")
-    public RedirectView pauseTimer(@RequestParam Integer pomodoroId) {
+    public RedirectView pauseTimer(@RequestParam Integer pomodoroId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.stop_session(pomodoroId);
         return new RedirectView("/timer");
     }
 
     @PostMapping("/timer/resume")
-    public RedirectView resumeTimer(@RequestParam Integer pomodoroId) {
+    public RedirectView resumeTimer(@RequestParam Integer pomodoroId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.start_session(pomodoroId);
         return new RedirectView("/timer");
     }
 
     @PostMapping("/timer/complete")
-    public RedirectView completeTimer(@RequestParam Integer pomodoroId) {
+    public RedirectView completeTimer(@RequestParam Integer pomodoroId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.increment_session(pomodoroId);
         return new RedirectView("/timer");
     }
 
     @PostMapping("/timer/reset")
-    public RedirectView resetTimer(@RequestParam Integer pomodoroId) {
+    public RedirectView resetTimer(@RequestParam Integer pomodoroId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.reset_sessions(pomodoroId);
         return new RedirectView("/timer");
     }
 
     @PostMapping("/timer/delete")
-    public RedirectView deleteTimer(@RequestParam Integer pomodoroId) {
+    public RedirectView deleteTimer(@RequestParam Integer pomodoroId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.delete_pomodoro(pomodoroId);
         return new RedirectView("/timer");
     }
@@ -160,18 +207,19 @@ public class WebController {
     // ============ TASKS (Tab 2) ============
 
     @GetMapping("/tasks")
-    public String tasks(Model model,
-                        @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
+    public String tasks(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
 
-        List<Task> allTasks = taskService.get_all_tasks();
+        long userId = currentUser.get_id();
+        model.addAttribute("currentUser", currentUser);
+
+        List<Task> allTasks = taskService.get_all_tasks(userId);
         model.addAttribute("tasks", allTasks);
         model.addAttribute("totalTasks", allTasks.size());
         model.addAttribute("completionRate", taskService.get_completion_rate());
         model.addAttribute("overdueTasks", taskService.count_overdue_tasks());
 
-        // Counts by status
         long pending = allTasks.stream().filter(t -> t.get_status() == Status.PENDING).count();
         long inProgress = allTasks.stream().filter(t -> t.get_status() == Status.IN_PROGRESS).count();
         long completed = allTasks.stream().filter(t -> t.get_status() == Status.COMPLETED).count();
@@ -184,19 +232,22 @@ public class WebController {
         model.addAttribute("users", userService.get_all_users());
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("statuses", Status.values());
-        model.addAttribute("categories", categoryService.get_all_categories());
-        model.addAttribute("tags", tagService.get_all_tags());
+        model.addAttribute("categories", categoryService.get_all_categories(userId));
+        model.addAttribute("tags", tagService.get_all_tags(userId));
 
         return "tasks";
     }
 
     @GetMapping("/tasks/new")
-    public String newTaskForm(Model model) {
+    public String newTaskForm(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
         model.addAttribute("task", new Task(0, "", "", Priority.LOW));
         model.addAttribute("users", userService.get_all_users());
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("categories", categoryService.get_all_categories());
-        model.addAttribute("tags", tagService.get_all_tags());
+        model.addAttribute("categories", categoryService.get_all_categories(currentUser.get_id()));
+        model.addAttribute("tags", tagService.get_all_tags(currentUser.get_id()));
         return "task-form";
     }
 
@@ -204,8 +255,12 @@ public class WebController {
     public RedirectView createTask(@ModelAttribute Task task,
                                    @RequestParam(required = false) Integer assignedUserId,
                                    @RequestParam(required = false) Integer categoryId,
-                                   @RequestParam(required = false) Boolean storeSessions) {
-        Task created = taskService.create_task(task.get_title(), task.get_description(), task.get_priority());
+                                   @RequestParam(required = false) Boolean storeSessions,
+                                   HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
+
+        Task created = taskService.create_task(task.get_title(), task.get_description(), task.get_priority(), currentUser.get_id());
         if (assignedUserId != null && assignedUserId > 0) {
             created.set_assigned_user_id(assignedUserId);
         }
@@ -219,15 +274,18 @@ public class WebController {
     }
 
     @GetMapping("/tasks/{id}/edit")
-    public String editTask(@PathVariable int id, Model model) {
-        Task task = taskService.try_get_task(id).orElse(null);
+    public String editTask(@PathVariable int id, HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
+        Task task = taskService.try_get_task(id, currentUser.get_id()).orElse(null);
         if (task == null) return "redirect:/tasks";
         model.addAttribute("task", task);
         model.addAttribute("users", userService.get_all_users());
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("statuses", Status.values());
-        model.addAttribute("categories", categoryService.get_all_categories());
-        model.addAttribute("tags", tagService.get_all_tags());
+        model.addAttribute("categories", categoryService.get_all_categories(currentUser.get_id()));
+        model.addAttribute("tags", tagService.get_all_tags(currentUser.get_id()));
         return "task-form";
     }
 
@@ -235,8 +293,12 @@ public class WebController {
     public RedirectView updateTask(@PathVariable int id, @ModelAttribute Task task,
                                    @RequestParam(required = false) Integer assignedUserId,
                                    @RequestParam(required = false) Integer categoryId,
-                                   @RequestParam(required = false) Boolean storeSessions) {
-        Task existing = taskService.try_get_task(id).orElse(null);
+                                   @RequestParam(required = false) Boolean storeSessions,
+                                   HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
+
+        Task existing = taskService.try_get_task(id, currentUser.get_id()).orElse(null);
         if (existing != null) {
             existing.set_title(task.get_title());
             existing.set_description(task.get_description());
@@ -260,19 +322,19 @@ public class WebController {
     }
 
     @PostMapping("/tasks/{id}/delete")
-    public RedirectView deleteTask(@PathVariable int id) {
+    public RedirectView deleteTask(@PathVariable int id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.delete_pomodoros_for_task(id);
-        // Mark task as cancelled instead of delete (TaskService has no delete)
-        Task task = taskService.try_get_task(id).orElse(null);
-        if (task != null) {
-            task.set_status(Status.CANCELLED);
-        }
+        taskService.delete_task(id, currentUser.get_id());
         return new RedirectView("/tasks");
     }
 
     @PostMapping("/tasks/{id}/complete")
-    public RedirectView completeTask(@PathVariable int id) {
-        Task task = taskService.try_get_task(id).orElse(null);
+    public RedirectView completeTask(@PathVariable int id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
+        Task task = taskService.try_get_task(id, currentUser.get_id()).orElse(null);
         if (task != null) {
             task.set_status(Status.COMPLETED);
             if (task.get_assigned_user_id() > 0) {
@@ -285,11 +347,11 @@ public class WebController {
     // ============ USERS (Tab 3) ============
 
     @GetMapping("/users")
-    public String users(Model model,
-                        @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
+    public String users(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
 
+        model.addAttribute("currentUser", currentUser);
         List<User> allUsers = userService.get_all_users();
         model.addAttribute("users", allUsers);
         model.addAttribute("totalUsers", allUsers.size());
@@ -301,20 +363,28 @@ public class WebController {
     }
 
     @GetMapping("/users/new")
-    public String newUserForm(Model model) {
+    public String newUserForm(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
         model.addAttribute("user", new User(0, "", "", Role.ADMIN));
         model.addAttribute("roles", Role.values());
         return "user-form";
     }
 
     @PostMapping("/users")
-    public RedirectView createUser(@ModelAttribute User user) {
+    public RedirectView createUser(@ModelAttribute User user, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         userService.create_user(user.get_name(), user.get_email(), user.get_role());
         return new RedirectView("/users");
     }
 
     @GetMapping("/users/{id}/edit")
-    public String editUser(@PathVariable int id, Model model) {
+    public String editUser(@PathVariable int id, HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
+
         User user = userService.try_get_user(id).orElse(null);
         if (user == null) return "redirect:/users";
         model.addAttribute("user", user);
@@ -323,7 +393,9 @@ public class WebController {
     }
 
     @PostMapping("/users/{id}")
-    public RedirectView updateUser(@PathVariable int id, @ModelAttribute User user) {
+    public RedirectView updateUser(@PathVariable int id, @ModelAttribute User user, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         userService.update_user_name(id, user.get_name());
         userService.update_user_email(id, user.get_email());
         userService.update_user_role(id, user.get_role());
@@ -331,19 +403,25 @@ public class WebController {
     }
 
     @PostMapping("/users/{id}/delete")
-    public RedirectView deleteUser(@PathVariable int id) {
+    public RedirectView deleteUser(@PathVariable int id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         userService.delete_user(id);
         return new RedirectView("/users");
     }
 
     @PostMapping("/users/{id}/assign-task")
-    public RedirectView assignTask(@PathVariable int id, @RequestParam Integer taskId) {
+    public RedirectView assignTask(@PathVariable int id, @RequestParam Integer taskId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         userService.assign_task_to_user(id, taskId);
         return new RedirectView("/users");
     }
 
     @PostMapping("/users/{id}/unassign-task")
-    public RedirectView unassignTask(@PathVariable int id, @RequestParam Integer taskId) {
+    public RedirectView unassignTask(@PathVariable int id, @RequestParam Integer taskId, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         userService.unassign_task_from_user(id, taskId);
         return new RedirectView("/users");
     }
@@ -351,42 +429,33 @@ public class WebController {
     // ============ SESSIONS (Tab 4) ============
 
     @GetMapping("/sessions")
-    public String sessions(Model model,
-                           @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
+    public String sessions(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
 
+        model.addAttribute("currentUser", currentUser);
         List<Pomodoro> allPomodoros = pomodoroService.get_all_pomodoros();
         model.addAttribute("pomodoros", allPomodoros);
         model.addAttribute("totalSessions", pomodoroService.get_total_sessions());
         model.addAttribute("totalFocusMinutes", pomodoroService.get_total_focus_time_minutes());
         model.addAttribute("activeDays", pomodoroService.get_active_days_count());
         model.addAttribute("averageSessions", pomodoroService.get_average_sessions_per_task());
-
-        // Sessions with history
         model.addAttribute("pomodorosWithSessions", pomodoroService.get_pomodoros_with_sessions());
-
         return "sessions";
     }
 
-    @PostMapping("/sessions/{id}/set-duration")
-    public RedirectView setSessionDuration(@PathVariable int id, @RequestParam Integer durationMinutes) {
-        Pomodoro p = pomodoroService.try_get_pomodoro(id).orElse(null);
-        if (p != null && durationMinutes != null && durationMinutes > 0) {
-            // Note: Pomodoro model may need a set_duration method
-            // For now, we'll handle via the model
-        }
-        return new RedirectView("/sessions");
-    }
-
     @PostMapping("/sessions/{id}/reset")
-    public RedirectView resetSession(@PathVariable int id) {
+    public RedirectView resetSession(@PathVariable int id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.reset_sessions(id);
         return new RedirectView("/sessions");
     }
 
     @PostMapping("/sessions/{id}/delete")
-    public RedirectView deleteSession(@PathVariable int id) {
+    public RedirectView deleteSession(@PathVariable int id, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         pomodoroService.delete_pomodoro(id);
         return new RedirectView("/sessions");
     }
@@ -394,12 +463,12 @@ public class WebController {
     // ============ REPORTS (Tab 5) ============
 
     @GetMapping("/reports")
-    public String reports(Model model,
-                          @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
+    public String reports(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
 
-        List<Task> allTasks = taskService.get_all_tasks();
+        model.addAttribute("currentUser", currentUser);
+        List<Task> allTasks = taskService.get_all_tasks(currentUser.get_id());
         model.addAttribute("totalTasks", allTasks.size());
         model.addAttribute("completionRate", taskService.get_completion_rate());
         model.addAttribute("overdueTasks", taskService.count_overdue_tasks());
@@ -417,7 +486,6 @@ public class WebController {
         model.addAttribute("totalFocusMinutes", pomodoroService.get_total_focus_time_minutes());
         model.addAttribute("mostProductiveTask", pomodoroService.get_most_productive_task());
 
-        // User stats
         model.addAttribute("topPerformers", userService.get_top_performers(5));
         model.addAttribute("averageCompletionRate", userService.get_average_completion_rate());
 
@@ -425,35 +493,35 @@ public class WebController {
     }
 
     @GetMapping("/reports/export")
-    public RedirectView exportReport() {
-        // Generate report text
-        String report = reportService.generate_summary_report();
-        // In a web app, we'd return this as a downloadable file
-        // For now, just redirect back to reports
+    public RedirectView exportReport(HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         return new RedirectView("/reports");
     }
 
     // ============ SETTINGS (Tab 6) ============
 
     @GetMapping("/settings")
-    public String settings(Model model,
-                           @SessionAttribute(name = "currentUser", required = false) User currentUser) {
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("isGuest", currentUser == null);
+    public String settings(HttpSession session, Model model) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return "redirect:/login";
 
+        model.addAttribute("currentUser", currentUser);
         AppSettings s = settingsService.getSettings();
         model.addAttribute("settings", s);
 
-        Role role = (currentUser != null) ? currentUser.get_role() : null;
+        Role role = currentUser.get_role();
         model.addAttribute("role", role);
         model.addAttribute("visibleCount", settingsService.getVisibleCountForRole(role));
-        model.addAttribute("canEdit", currentUser != null);
+        model.addAttribute("canEdit", true);
 
         return "settings";
     }
 
     @PostMapping("/settings/theme")
-    public RedirectView setTheme(@RequestParam String theme) {
+    public RedirectView setTheme(@RequestParam String theme, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         try {
             settingsService.getSettings().setTheme(AppSettings.Theme.valueOf(theme));
         } catch (IllegalArgumentException e) {
@@ -463,7 +531,9 @@ public class WebController {
     }
 
     @PostMapping("/settings/default-duration")
-    public RedirectView setDefaultDuration(@RequestParam Integer minutes) {
+    public RedirectView setDefaultDuration(@RequestParam Integer minutes, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         if (minutes != null && minutes >= 1 && minutes <= 180) {
             settingsService.getSettings().setDefaultPomodoroDuration(minutes);
             pomodoroService.set_default_duration(minutes);
@@ -472,41 +542,36 @@ public class WebController {
     }
 
     @PostMapping("/settings/notification-sound")
-    public RedirectView setNotificationSound(@RequestParam(required = false) Boolean enabled) {
+    public RedirectView setNotificationSound(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setNotificationSound(enabled != null && enabled);
         return new RedirectView("/settings");
     }
 
     @PostMapping("/settings/auto-start")
-    public RedirectView setAutoStart(@RequestParam(required = false) Boolean enabled) {
+    public RedirectView setAutoStart(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setAutoStartNextSession(enabled != null && enabled);
         return new RedirectView("/settings");
     }
 
     @PostMapping("/settings/show-all-tasks")
-    public RedirectView setShowAllTasks(@RequestParam(required = false) Boolean enabled) {
+    public RedirectView setShowAllTasks(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setShowAllTasks(enabled != null && enabled);
         return new RedirectView("/settings");
     }
 
     @PostMapping("/settings/daily-focus-goal")
-    public RedirectView setDailyFocusGoal(@RequestParam Integer goal) {
+    public RedirectView setDailyFocusGoal(@RequestParam Integer goal, HttpSession session) {
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) return new RedirectView("/login");
         if (goal != null && goal > 0) {
             settingsService.getSettings().setDailyFocusGoal(goal);
         }
         return new RedirectView("/settings");
-    }
-
-    // ============ LOGOUT ============
-
-    @GetMapping("/logout")
-    public RedirectView logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.removeAttribute("currentUser");
-            session.removeAttribute("isGuest");
-            session.invalidate();
-        }
-        return new RedirectView("/login");
     }
 }

@@ -4,22 +4,51 @@ import models.Priority;
 import models.Status;
 import models.Task;
 
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Service;
-
 /**
- * TaskService - manages all task operations including CRUD, filtering, and statistics
- * Provides methods to create, read, update, delete tasks and generate task analytics
+ * TaskService - manages all task operations including CRUD, filtering, and statistics.
+ * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
 @Service
 public class TaskService {
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
+    private final PostgresTaskDAO postgresTaskDAO;
+    private final boolean usePostgres;
 
-    // Create new task - generates unique ID and stores task in memory
+    // No-arg constructor for JavaFX (in-memory only)
+    public TaskService() {
+        this.postgresTaskDAO = null;
+        this.usePostgres = false;
+    }
+
+    // Constructor with PostgreSQL DAO for web app
+    public TaskService(PostgresTaskDAO postgresTaskDAO) {
+        this.postgresTaskDAO = postgresTaskDAO;
+        this.usePostgres = true;
+        loadFromDatabase();
+    }
+
+    private void loadFromDatabase() {
+        if (!usePostgres) return;
+        try {
+            // Load all tasks - in multi-user mode, this loads all tasks
+            // User-specific filtering is done at the query level
+            // For now, we load all and filter in memory
+            // Note: PostgresTaskDAO.getAllTasksByUser requires a userId
+            // We'll load tasks lazily per user instead
+            System.out.println("ℹ TaskService initialized with PostgreSQL DAO");
+        } catch (Exception e) {
+            System.err.println("⚠ Could not initialize TaskService with PostgreSQL: " + e.getMessage());
+        }
+    }
+
+    // Create new task - generates unique ID and stores task in memory and PostgreSQL
     public Task create_task(String title, String description, Priority priority) {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title cannot be empty");
@@ -28,6 +57,37 @@ public class TaskService {
         int id = idGenerator.getAndIncrement();
         Task task = new Task(id, title.trim(), description, priority);
         tasks.put(id, task);
+
+        if (usePostgres) {
+            // Note: Task creation for web app requires userId - use create_task with userId instead
+            System.out.println("⚠ Use create_task(title, description, priority, userId) for PostgreSQL mode");
+        }
+
+        System.out.println("✓ Task created: " + task);
+        return task;
+    }
+
+    // Create new task with user isolation - for web app multi-user support
+    public Task create_task(String title, String description, Priority priority, long userId) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+
+        int id = idGenerator.getAndIncrement();
+        Task task = new Task(id, title.trim(), description, priority);
+        tasks.put(id, task);
+
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.createTask(task, userId);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to persist task to PostgreSQL: " + e.getMessage());
+                tasks.remove(id);
+                idGenerator.decrementAndGet();
+                throw new RuntimeException("Failed to create task in database");
+            }
+        }
+
         System.out.println("✓ Task created: " + task);
         return task;
     }
@@ -41,14 +101,45 @@ public class TaskService {
         return task;
     }
 
+    // Get task by ID with user isolation - for web app
+    public Task get_task(int id, long userId) {
+        if (usePostgres && postgresTaskDAO != null) {
+            Task task = postgresTaskDAO.getTaskById(id, userId);
+            if (task != null) {
+                tasks.put(id, task);
+                return task;
+            }
+            throw new IllegalArgumentException("Task not found: " + id + " for user " + userId);
+        }
+        return get_task(id);
+    }
+
     // Try to get task safely - returns Optional without throwing exception
     public Optional<Task> try_get_task(int id) {
         return Optional.ofNullable(tasks.get(id));
     }
 
-    // Get all tasks - returns copy of all stored tasks
+    // Try to get task safely with user isolation - for web app
+    public Optional<Task> try_get_task(int id, long userId) {
+        if (usePostgres && postgresTaskDAO != null) {
+            return Optional.ofNullable(postgresTaskDAO.getTaskById(id, userId));
+        }
+        return try_get_task(id);
+    }
+
+    // Get all tasks - returns copy of all stored tasks (in-memory mode)
     public List<Task> get_all_tasks() {
         return new ArrayList<>(tasks.values());
+    }
+
+    // Get all tasks for a specific user - for web app multi-user support
+    public List<Task> get_all_tasks(long userId) {
+        if (usePostgres && postgresTaskDAO != null) {
+            return postgresTaskDAO.getAllTasksByUser(userId);
+        }
+        return get_all_tasks().stream()
+                .filter(t -> t.get_assigned_user_id() == (int) userId || t.get_assigned_user_id() == -1)
+                .toList();
     }
 
     // Update task status - finds task and changes its status
@@ -56,14 +147,49 @@ public class TaskService {
         Task task = get_task(id);
         Status oldStatus = task.get_status();
         task.set_status(status);
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.updateTask(task, -1); // userId not tracked in legacy mode
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + id + " status updated from " + oldStatus + " to " + status);
         return task;
+    }
+
+    // Update task status with user isolation - for web app
+    public Task update_task_status(int id, Status status, long userId) {
+        if (usePostgres && postgresTaskDAO != null) {
+            Task task = postgresTaskDAO.getTaskById(id, userId);
+            if (task == null) {
+                throw new IllegalArgumentException("Task not found: " + id + " for user " + userId);
+            }
+            Status oldStatus = task.get_status();
+            task.set_status(status);
+            try {
+                postgresTaskDAO.updateTask(task, userId);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+            tasks.put(id, task);
+            System.out.println("✓ Task #" + id + " status updated from " + oldStatus + " to " + status);
+            return task;
+        }
+        return update_task_status(id, status);
     }
 
     // Update task priority - finds task and changes its priority level
     public Task update_task_priority(int id, Priority priority) {
         Task task = get_task(id);
         task.set_priority(priority);
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.updateTask(task, -1);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + id + " priority updated to " + priority);
         return task;
     }
@@ -72,6 +198,13 @@ public class TaskService {
     public Task update_task_description(int id, String description) {
         Task task = get_task(id);
         task.set_description(description);
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.updateTask(task, -1);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + id + " description updated");
         return task;
     }
@@ -80,6 +213,13 @@ public class TaskService {
     public Task update_task_title(int id, String title) {
         Task task = get_task(id);
         task.set_title(title);
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.updateTask(task, -1);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + id + " title updated");
         return task;
     }
@@ -88,6 +228,13 @@ public class TaskService {
     public Task update_task_due_date(int id, LocalDateTime dueDate) {
         Task task = get_task(id);
         task.set_due_date(dueDate);
+        if (usePostgres && postgresTaskDAO != null) {
+            try {
+                postgresTaskDAO.updateTask(task, -1);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + id + " due date updated to " + dueDate);
         return task;
     }
@@ -96,10 +243,33 @@ public class TaskService {
     public boolean delete_task(int id) {
         Task removed = tasks.remove(id);
         if (removed != null) {
+            if (usePostgres && postgresTaskDAO != null) {
+                try {
+                    postgresTaskDAO.deleteTask(id, -1);
+                } catch (Exception e) {
+                    System.err.println("⚠ Failed to delete task from PostgreSQL: " + e.getMessage());
+                    tasks.put(id, removed);
+                    return false;
+                }
+            }
             System.out.println("✓ Task deleted: " + removed);
             return true;
         }
         return false;
+    }
+
+    // Delete task with user isolation - for web app
+    public boolean delete_task(int id, long userId) {
+        if (usePostgres && postgresTaskDAO != null) {
+            boolean deleted = postgresTaskDAO.deleteTask(id, userId);
+            tasks.remove(id);
+            if (deleted) {
+                System.out.println("✓ Task deleted: #" + id);
+                return true;
+            }
+            return false;
+        }
+        return delete_task(id);
     }
 
     // Filter tasks by status - returns list of tasks matching status

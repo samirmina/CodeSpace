@@ -38,6 +38,9 @@ public class Task {
     // Standard JavaBean getter for Thymeleaf compatibility
     public int getId() { return id; }
 
+    // Set task ID - updates task identifier
+    public void set_id(int id) { this.id = id; }
+
     public String get_title() { return title; }
 
     // Standard JavaBean getter for Thymeleaf compatibility
@@ -86,6 +89,9 @@ public class Task {
 
     // Standard JavaBean getter for Thymeleaf compatibility
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    // Set creation timestamp - sets when task was created
+    public void set_created_at(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public LocalDateTime get_due_date() { return dueDate; }
 

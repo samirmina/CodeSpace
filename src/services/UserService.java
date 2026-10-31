@@ -4,21 +4,54 @@ import models.Role;
 import models.Task;
 import models.User;
 
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Service;
-
 /**
- * UserService - manages all user operations including CRUD and role filtering
- * Provides methods to create, read, update, delete users and track user activity
+ * UserService - manages all user operations including CRUD and role filtering.
+ * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
 @Service
 public class UserService {
     private final Map<Integer, User> users = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
+    private final PostgresUserDAO postgresUserDAO;
+    private final boolean usePostgres;
 
-    // Create new user - validates input and stores user with generated ID
+    // No-arg constructor for JavaFX (in-memory only)
+    public UserService() {
+        this.postgresUserDAO = null;
+        this.usePostgres = false;
+    }
+
+    // Constructor with PostgreSQL DAO for web app
+    public UserService(PostgresUserDAO postgresUserDAO) {
+        this.postgresUserDAO = postgresUserDAO;
+        this.usePostgres = true;
+        loadFromDatabase();
+    }
+
+    private void loadFromDatabase() {
+        if (!usePostgres) return;
+        try {
+            List<User> dbUsers = postgresUserDAO.getAllUsers();
+            for (User user : dbUsers) {
+                users.put(user.get_id(), user);
+                if (user.get_id() >= idGenerator.get()) {
+                    idGenerator.set(user.get_id() + 1);
+                }
+            }
+            System.out.println("ℹ Loaded " + dbUsers.size() + " users from PostgreSQL");
+        } catch (Exception e) {
+            System.err.println("⚠ Could not load users from PostgreSQL: " + e.getMessage());
+        }
+    }
+
+    // Create new user - validates input, stores in PostgreSQL and memory
     public User create_user(String name, String email, Role role) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
@@ -30,6 +63,19 @@ public class UserService {
         int id = idGenerator.getAndIncrement();
         User user = new User(id, name.trim(), email.trim(), role);
         users.put(id, user);
+
+        // Persist to PostgreSQL if enabled
+        if (usePostgres) {
+            try {
+                postgresUserDAO.createUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to persist user to PostgreSQL: " + e.getMessage());
+                users.remove(id);
+                idGenerator.decrementAndGet();
+                throw new RuntimeException("Failed to create user in database");
+            }
+        }
+
         System.out.println("✓ User created: " + user);
         return user;
     }
@@ -87,36 +133,66 @@ public class UserService {
         return results;
     }
 
-    // Delete user - removes user from storage by ID
+    // Delete user - removes user from PostgreSQL and memory
     public boolean delete_user(int id) {
         User removed = users.remove(id);
         if (removed != null) {
+            if (usePostgres) {
+                try {
+                    postgresUserDAO.deleteUser(id);
+                } catch (Exception e) {
+                    System.err.println("⚠ Failed to delete user from PostgreSQL: " + e.getMessage());
+                    users.put(id, removed);
+                    return false;
+                }
+            }
             System.out.println("✓ User deleted: " + removed);
             return true;
         }
         return false;
     }
 
-    // Update user name - finds user and updates their name
+    // Update user name - finds user and updates their name in PostgreSQL and memory
     public User update_user_name(int id, String name) {
         User user = get_user(id);
         user.set_name(name);
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ User #" + id + " name updated to " + name);
         return user;
     }
 
-    // Update user email - finds user and updates their email
+    // Update user email - finds user and updates their email in PostgreSQL and memory
     public User update_user_email(int id, String email) {
         User user = get_user(id);
         user.set_email(email);
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ User #" + id + " email updated to " + email);
         return user;
     }
 
-    // Update user role - finds user and updates their role
+    // Update user role - finds user and updates their role in PostgreSQL and memory
     public User update_user_role(int id, Role role) {
         User user = get_user(id);
         user.set_role(role);
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ User #" + id + " role updated to " + role);
         return user;
     }
@@ -125,6 +201,13 @@ public class UserService {
     public User assign_task_to_user(int userId, int taskId) {
         User user = get_user(userId);
         user.assign_task(taskId);
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + taskId + " assigned to " + user.get_name());
         return user;
     }
@@ -133,6 +216,13 @@ public class UserService {
     public User unassign_task_from_user(int userId, int taskId) {
         User user = get_user(userId);
         user.unassign_task(taskId);
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
         System.out.println("✓ Task #" + taskId + " unassigned from " + user.get_name());
         return user;
     }
@@ -141,6 +231,13 @@ public class UserService {
     public void mark_task_completed_for_user(int userId) {
         User user = get_user(userId);
         user.increment_completed_count();
+        if (usePostgres) {
+            try {
+                postgresUserDAO.updateUser(user);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to update user in PostgreSQL: " + e.getMessage());
+            }
+        }
     }
 
     // Get user by task ID - finds user assigned to specific task
@@ -188,7 +285,7 @@ public class UserService {
     public List<User> get_top_performers(int limit) {
         List<User> sorted = new ArrayList<>(users.values());
         sorted.sort((u1, u2) -> Integer.compare(u2.get_tasks_completed_count(), u1.get_tasks_completed_count()));
-        
+
         List<User> top = new ArrayList<>();
         for (int i = 0; i < Math.min(limit, sorted.size()); i++) {
             top.add(sorted.get(i));
@@ -200,7 +297,7 @@ public class UserService {
     public double get_average_completion_rate() {
         int total = users.size();
         if (total == 0) return 0.0;
-        
+
         double sum = 0;
         for (User user : users.values()) {
             sum += user.get_completion_rate();
@@ -217,7 +314,6 @@ public class UserService {
     // Add user directly - used for loading from storage without validation
     public void add_user_direct(User user) {
         users.put(user.get_id(), user);
-        // Update generator to avoid ID conflicts
         if (user.get_id() >= idGenerator.get()) {
             idGenerator.set(user.get_id() + 1);
         }

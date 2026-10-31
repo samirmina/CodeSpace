@@ -40,6 +40,9 @@ public class Pomodoro {
     // Standard JavaBean getter for Thymeleaf compatibility
     public int getId() { return id; }
 
+    // Set pomodoro ID - updates pomodoro identifier
+    public void set_id(int id) { this.id = id; }
+
     // Get task ID - returns associated task identifier
     public int get_task_id() { return taskId; }
 
@@ -84,6 +87,11 @@ public class Pomodoro {
     // Standard JavaBean getter for Thymeleaf compatibility
     public LocalDateTime getLastSessionDate() { return lastSessionDate; }
 
+    // Set last session date - updates timestamp of last completed session
+    public void set_last_session_date(LocalDateTime lastSessionDate) {
+        this.lastSessionDate = lastSessionDate;
+    }
+
     // Check if session is active - returns true if currently running
     public boolean is_active() { return isActive; }
 
@@ -103,6 +111,11 @@ public class Pomodoro {
 
     // Standard JavaBean getter for Thymeleaf compatibility
     public LocalDateTime getStartedAt() { return startedAt; }
+
+    // Set session start time - marks when session was started
+    public void set_started_at(LocalDateTime startedAt) {
+        this.startedAt = startedAt;
+    }
 
     // Get session history - returns list of completed session timestamps
     public List<LocalDateTime> get_session_history() { return sessionHistory; }

@@ -21,11 +21,20 @@ public class Tag {
 
     public int get_id() { return id; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public int getId() { return id; }
+
     public String get_name() { return name; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public String getName() { return name; }
 
     public void set_name(String name) { this.name = name; }
 
     public String get_color() { return color; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public String getColor() { return color; }
 
     public void set_color(String color) { this.color = color; }
 

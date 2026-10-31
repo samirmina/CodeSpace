@@ -3,21 +3,36 @@ package services;
 import models.Pomodoro;
 import models.Task;
 
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.stereotype.Service;
-
 /**
- * PomodoroService - manages all pomodoro timer sessions
- * Provides methods to create, track, and analyze pomodoro sessions for tasks
+ * PomodoroService - manages all pomodoro timer sessions.
+ * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
 @Service
 public class PomodoroService {
     private final Map<Integer, Pomodoro> pomodoros = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
     private int defaultDuration = 25;
+    private final PostgresPomodoroDAO postgresPomodoroDAO;
+    private final boolean usePostgres;
+
+    // No-arg constructor for JavaFX (in-memory only)
+    public PomodoroService() {
+        this.postgresPomodoroDAO = null;
+        this.usePostgres = false;
+    }
+
+    // Constructor with PostgreSQL DAO for web app
+    public PomodoroService(PostgresPomodoroDAO postgresPomodoroDAO) {
+        this.postgresPomodoroDAO = postgresPomodoroDAO;
+        this.usePostgres = true;
+        System.out.println("ℹ PomodoroService initialized with PostgreSQL DAO");
+    }
 
     // Create pomodoro with default duration - generates ID and stores session
     public Pomodoro create_pomodoro(int taskId, String taskName) {
@@ -29,6 +44,33 @@ public class PomodoroService {
         int id = idGenerator.getAndIncrement();
         Pomodoro pomodoro = new Pomodoro(id, taskId, taskName, durationMinutes);
         pomodoros.put(id, pomodoro);
+
+        if (usePostgres && postgresPomodoroDAO != null) {
+            // For web app, use the user-scoped version
+            System.out.println("⚠ Use create_pomodoro(taskId, taskName, durationMinutes, userId) for PostgreSQL mode");
+        }
+
+        System.out.println("✓ Pomodoro created: " + pomodoro);
+        return pomodoro;
+    }
+
+    // Create pomodoro with user isolation - for web app multi-user support
+    public Pomodoro create_pomodoro(int taskId, String taskName, int durationMinutes, long userId) {
+        int id = idGenerator.getAndIncrement();
+        Pomodoro pomodoro = new Pomodoro(id, taskId, taskName, durationMinutes);
+        pomodoros.put(id, pomodoro);
+
+        if (usePostgres && postgresPomodoroDAO != null) {
+            try {
+                postgresPomodoroDAO.createPomodoro(pomodoro, userId);
+            } catch (Exception e) {
+                System.err.println("⚠ Failed to persist pomodoro to PostgreSQL: " + e.getMessage());
+                pomodoros.remove(id);
+                idGenerator.decrementAndGet();
+                throw new RuntimeException("Failed to create pomodoro in database");
+            }
+        }
+
         System.out.println("✓ Pomodoro created: " + pomodoro);
         return pomodoro;
     }
@@ -47,7 +89,7 @@ public class PomodoroService {
         return Optional.ofNullable(pomodoros.get(id));
     }
 
-    // Get all pomodoros - returns copy of all sessions
+    // Get all pomodoros - returns copy of all stored sessions
     public List<Pomodoro> get_all_pomodoros() {
         return new ArrayList<>(pomodoros.values());
     }
@@ -181,7 +223,7 @@ public class PomodoroService {
         Map<String, Integer> focusByTask = get_stored_sessions_by_task_name(taskService);
         String mostProductive = null;
         int maxFocus = 0;
-        
+
         for (Map.Entry<String, Integer> entry : focusByTask.entrySet()) {
             if (entry.getValue() > maxFocus) {
                 maxFocus = entry.getValue();
@@ -197,17 +239,6 @@ public class PomodoroService {
         for (Pomodoro p : pomodoros.values()) {
             String name = p.get_task_name();
             result.put(name, result.getOrDefault(name, 0) + p.get_total_focus_time_minutes());
-        }
-        return result;
-    }
-
-    // Get sessions by task ID - aggregates focus minutes for each task ID
-    public Map<Integer, Integer> get_sessions_by_task_id() {
-        Map<Integer, Integer> result = new HashMap<>();
-        for (Pomodoro p : pomodoros.values()) {
-            int taskId = p.get_task_id();
-            int focus = p.get_total_focus_time_minutes();
-            result.put(taskId, result.getOrDefault(taskId, 0) + focus);
         }
         return result;
     }
@@ -310,7 +341,7 @@ public class PomodoroService {
         Map<String, Integer> focusByTask = get_sessions_by_task_name();
         String mostProductive = null;
         int maxFocus = 0;
-        
+
         for (Map.Entry<String, Integer> entry : focusByTask.entrySet()) {
             if (entry.getValue() > maxFocus) {
                 maxFocus = entry.getValue();
