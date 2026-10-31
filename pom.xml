@@ -195,40 +195,6 @@
                 </executions>
             </plugin>
 
-            <!-- JPackage Plugin for Native Installers (on hold - not available on Maven Central)
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>jpackage-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <configuration>
-                    <name>Chronos</name>
-                    <appVersion>${project.version}</appVersion>
-                    <mainClass>${main.class}</mainClass>
-                    <mainJar>${project.build.finalName}.jar</mainJar>
-                    <icon>src/icon.png</icon>
-                    <vendor>Chronos Team</vendor>
-                    <description>Pomodoro &amp; Task Manager</description>
-                    <copyright>2024 Chronos Team</copyright>
-                    <type>exe</type>
-                    <winMenu>true</winMenu>
-                    <winMenuGroup>Chronos Team</winMenuGroup>
-                    <shortcut>true</shortcut>
-                    <javaOptions>
-                        <javaOption>--enable-preview</javaOption>
-                    </javaOptions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>jpackage</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jpackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-
             <!-- Exec Plugin for running -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
