@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chronos - Task Form</title>
-    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 1rem; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .header p { font-size: 1.1rem; opacity: 0.9; }
-        .container { max-width: 700px; margin: 0 auto; padding: 2rem 1rem; }
-        .nav { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
-        .nav a { padding: 0.75rem 1.5rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s; }
-        .nav a:hover { background: #667eea; color: white; }
-        .nav a.active { background: #667eea; color: white; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .nav { display: flex; gap: 0.5rem; }
+        .nav a { padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.3); }
+        .nav a.active { background: white; color: #667eea; font-weight: 600; }
+        .container { max-width: 700px; margin: 0 auto; padding: 2rem; }
+        .user-badge { display: inline-block; padding: 0.2rem 0.6rem; background: #e8e8e8; color: #555; border-radius: 20px; font-size: 0.8rem; margin-bottom: 1rem; }
+        .user-badge.guest { background: #c62828; color: white; }
         .section { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
         .section-header { padding: 1.5rem; border-bottom: 1px solid #e8e8e8; background: #f8f9fa; }
         .section-header h2 { font-size: 1.25rem; color: #333; display: flex; align-items: center; gap: 0.5rem; }
@@ -25,7 +26,9 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
         .form-group textarea { min-height: 100px; resize: vertical; }
-        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.3s; font-size: 1rem; }
+        .checkbox-inline { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .checkbox-inline input { width: auto; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s; font-size: 1rem; }
         .btn-primary { background: #667eea; color: white; }
         .btn-primary:hover { background: #5568d3; }
         .btn-outline { background: transparent; color: #667eea; border: 2px solid #667eea; margin-left: 0.75rem; }
@@ -36,17 +39,21 @@
 <body>
     <div class="header">
         <h1>Chronos</h1>
-        <p>Task Management — Web Interface</p>
+        <nav class="nav">
+            <a href="/timer">Timer</a>
+            <a href="/tasks">Tasks</a>
+            <a href="/users">Users</a>
+            <a href="/sessions">Sessions</a>
+            <a href="/reports">Reports</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Logout</a>
+        </nav>
     </div>
 
-    <nav class="nav">
-        <a href="/">Dashboard</a>
-        <a href="/users">Users</a>
-        <a href="/tasks">Tasks</a>
-        <a href="/launch">Launch JavaFX GUI</a>
-    </nav>
-
     <div class="container">
+        <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+
         <div class="section">
             <div class="section-header">
                 <h2 th:text="${task.id gt 0 ? 'Edit Task' : 'Add New Task'}">Add New Task</h2>
@@ -81,6 +88,17 @@
                                 <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.name} + ' (' + ${user.email} + ')'">User</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="categoryId">Category</label>
+                            <select id="categoryId" name="categoryId">
+                                <option value="-1">No Category</option>
+                                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="storeSessions" name="storeSessions" th:checked="${task.storeSessions}" checked="checked"/>
+                        <label for="storeSessions">Store Sessions</label>
                     </div>
                     <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
                         <a href="/tasks" class="btn btn-outline">Cancel</a>
@@ -89,10 +107,6 @@
                 </form>
             </div>
         </div>
-    </div>
-
-    <div class="footer">
-        &copy; 2026 Chronos Team — Web Interface &amp; JavaFX Desktop GUI
     </div>
 </body>
 </html>

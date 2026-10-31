@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos - Settings</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .nav { display: flex; gap: 0.5rem; }
+        .nav a { padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.3); }
+        .nav a.active { background: white; color: #667eea; font-weight: 600; }
+        .container { max-width: 700px; margin: 0 auto; padding: 2rem; }
+        .user-badge { display: inline-block; padding: 0.2rem 0.6rem; background: #e8e8e8; color: #555; border-radius: 20px; font-size: 0.8rem; margin-bottom: 1rem; }
+        .user-badge.guest { background: #c62828; color: white; }
+        .section { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem; }
+        .section-header { padding: 1.5rem; border-bottom: 1px solid #e8e8e8; background: #f8f9fa; }
+        .section-header h2 { font-size: 1.25rem; color: #333; display: flex; align-items: center; gap: 0.5rem; }
+        .section-body { padding: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; color: #555; }
+        .form-group select, .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
+        .form-group select:disabled, .form-group input:disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+        .checkbox-inline { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .checkbox-inline input { width: auto; }
+        .checkbox-inline label { margin: 0; font-weight: 600; color: #555; cursor: pointer; }
+        .checkbox-inline input:disabled + label { color: #999; cursor: not-allowed; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s; font-size: 1rem; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        .role-info { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: #666; font-size: 0.9rem; }
+        .footer { text-align: center; padding: 2rem; color: #888; font-size: 0.9rem; border-top: 1px solid #e8e8e8; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Chronos</h1>
+        <nav class="nav">
+            <a href="/timer">Timer</a>
+            <a href="/tasks">Tasks</a>
+            <a href="/users">Users</a>
+            <a href="/sessions">Sessions</a>
+            <a href="/reports">Reports</a>
+            <a href="/settings" class="active">Settings</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="section-body">
+                <div class="role-info">
+                    <strong>Role:</strong> <span th:text="${role}">-</span> |
+                    <strong>Visible Settings:</strong> <span th:text="${visibleCount}">0</span> of 10 |
+                    <strong>Can Edit:</strong> <span th:text="${canEdit} ? 'Yes' : 'No (read-only)'">-</span>
+                </div>
+
+                <form th:action="@{/settings/theme}" method="post">
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <select id="theme" name="theme" th:disabled="${!canEdit}">
+                            <option value="DARK" th:selected="${settings.theme == 'DARK'}">Dark</option>
+                            <option value="LIGHT" th:selected="${settings.theme == 'LIGHT'}">Light</option>
+                            <option value="AUTO" th:selected="${settings.theme == 'AUTO'}">Auto</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Theme</button>
+                </form>
+
+                <form th:action="@{/settings/default-duration}" method="post">
+                    <div class="form-group">
+                        <label for="defaultDuration">Default Pomodoro Duration (minutes)</label>
+                        <input type="number" id="defaultDuration" name="minutes" th:value="${settings.defaultPomodoroDuration}" min="1" max="180" th:disabled="${!canEdit}"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Duration</button>
+                </form>
+
+                <form th:action="@{/settings/notification-sound}" method="post">
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="notificationSound" name="enabled" th:checked="${settings.notificationSound}" th:disabled="${!canEdit}"/>
+                        <label for="notificationSound">Notification Sound</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Sound Setting</button>
+                </form>
+
+                <form th:action="@{/settings/auto-start}" method="post">
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="autoStart" name="enabled" th:checked="${settings.autoStartNextSession}" th:disabled="${!canEdit}"/>
+                        <label for="autoStart">Auto Start Next Session</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Auto Start</button>
+                </form>
+
+                <form th:action="@{/settings/show-all-tasks}" method="post">
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="showAllTasks" name="enabled" th:checked="${settings.showAllTasks}" th:disabled="${!canEdit}"/>
+                        <label for="showAllTasks">Show All Tasks</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Task View</button>
+                </form>
+
+                <form th:action="@{/settings/daily-focus-goal}" method="post">
+                    <div class="form-group">
+                        <label for="dailyFocusGoal">Daily Focus Goal (minutes)</label>
+                        <input type="number" id="dailyFocusGoal" name="goal" th:value="${settings.dailyFocusGoal}" min="1" th:disabled="${!canEdit}"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:disabled="${!canEdit}">Save Focus Goal</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${isGuest}" class="section">
+            <div class="section-body">
+                <p style="color: #c62828;"><strong>Guest Mode:</strong> Settings are read-only. Log in as a user to modify settings.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

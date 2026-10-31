@@ -2,10 +2,13 @@ package services;
 
 import models.AppSettings;
 
+import org.springframework.stereotype.Service;
+
 /**
  * SettingsService - manages application settings with role-based access control.
  * Provides validation and permission checks for each setting key.
  */
+@Service
 public class SettingsService {
     private AppSettings settings;
 

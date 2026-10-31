@@ -8,10 +8,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.stereotype.Service;
+
 /**
  * TaskService - manages all task operations including CRUD, filtering, and statistics
  * Provides methods to create, read, update, delete tasks and generate task analytics
  */
+@Service
 public class TaskService {
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);

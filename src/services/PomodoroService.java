@@ -7,10 +7,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.stereotype.Service;
+
 /**
  * PomodoroService - manages all pomodoro timer sessions
  * Provides methods to create, track, and analyze pomodoro sessions for tasks
  */
+@Service
 public class PomodoroService {
     private final Map<Integer, Pomodoro> pomodoros = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);

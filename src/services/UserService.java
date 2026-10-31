@@ -7,10 +7,13 @@ import models.User;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.stereotype.Service;
+
 /**
  * UserService - manages all user operations including CRUD and role filtering
  * Provides methods to create, read, update, delete users and track user activity
  */
+@Service
 public class UserService {
     private final Map<Integer, User> users = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);

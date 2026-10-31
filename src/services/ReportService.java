@@ -10,10 +10,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import org.springframework.stereotype.Service;
+
 /**
  * ReportService - generates various reports and statistics
  * Provides methods to create summary, performance, and export reports
  */
+@Service
 public class ReportService {
     private final TaskService taskService;
     private final UserService userService;

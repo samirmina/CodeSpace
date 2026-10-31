@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos - Reports</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .nav { display: flex; gap: 0.5rem; }
+        .nav a { padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.3); }
+        .nav a.active { background: white; color: #667eea; font-weight: 600; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .user-badge { display: inline-block; padding: 0.2rem 0.6rem; background: #e8e8e8; color: #555; border-radius: 20px; font-size: 0.8rem; margin-bottom: 1rem; }
+        .user-badge.guest { background: #c62828; color: white; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .page-header h2 { font-size: 1.5rem; color: #333; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #667eea; }
+        .stat-card h3 { font-size: 2rem; color: #667eea; margin-bottom: 0.25rem; }
+        .stat-card p { color: #666; font-size: 0.85rem; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-success:hover { background: #1b5e20; }
+        .section { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem; }
+        .section-header { padding: 1.5rem; border-bottom: 1px solid #e8e8e8; background: #f8f9fa; }
+        .section-header h3 { font-size: 1.1rem; color: #333; }
+        .section-body { padding: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #e8e8e8; }
+        th { background: #f8f9fa; font-weight: 600; color: #667eea; text-transform: uppercase; font-size: 0.85rem; }
+        tr:hover { background: #f5f7fa; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .badge-developer { background: #e3f2fd; color: #1565c0; }
+        .badge-manager { background: #fff3e0; color: #e65100; }
+        .badge-admin { background: #f3e5f5; color: #7b1fa2; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #888; }
+        .progress-bar { background: #e8e8e8; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { background: #667eea; height: 100%; width: 0%; transition: width 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Chronos</h1>
+        <nav class="nav">
+            <a href="/timer">Timer</a>
+            <a href="/tasks">Tasks</a>
+            <a href="/users">Users</a>
+            <a href="/sessions">Sessions</a>
+            <a href="/reports" class="active">Reports</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+
+        <div class="page-header">
+            <h2>📊 Reports</h2>
+            <a href="/reports/export" class="btn btn-success">Export Report</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 th:text="${totalTasks}">0</h3>
+                <p>Total Tasks</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${#numbers.formatDecimal(completionRate, 0, 1)}">0</h3>
+                <p>Completion Rate</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${overdueTasks}">0</h3>
+                <p>Overdue Tasks</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${totalSessions}">0</h3>
+                <p>Total Sessions</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h3>Task Status Breakdown</h3>
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr><th>Status</th><th>Count</th><th>Percentage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-pending">Pending</span></td>
+                            <td th:text="${pendingCount}">0</td>
+                            <td><div class="progress-bar"><div class="progress-fill" style="width: ${#numbers.formatDecimal(pendingCount * 100.0 / totalTasks, 0, 1)}%"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-in-progress">In Progress</span></td>
+                            <td th:text="${inProgressCount}">0</td>
+                            <td><div class="progress-bar"><div class="progress-fill" style="width: ${#numbers.formatDecimal(inProgressCount * 100.0 / totalTasks, 0, 1)}%"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-completed">Completed</span></td>
+                            <td th:text="${completedCount}">0</td>
+                            <td><div class="progress-bar"><div class="progress-fill" style="width: ${#numbers.formatDecimal(completedCount * 100.0 / totalTasks, 0, 1)}%"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-cancelled">Cancelled</span></td>
+                            <td th:text="${cancelledCount}">0</td>
+                            <td><div class="progress-bar"><div class="progress-fill" style="width: ${#numbers.formatDecimal(cancelledCount * 100.0 / totalTasks, 0, 1)}%"></div></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h3>Top Performers</h3>
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr><th>Rank</th><th>Name</th><th>Role</th><th>Tasks Completed</th><th>Completion Rate</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user, iter : ${topPerformers}">
+                            <td th:text="${iter.index + 1}">-</td>
+                            <td th:text="${user.name}">-</td>
+                            <td th:text="${user.role}">-</td>
+                            <td th:text="${user.tasksCompletedCount}">-</td>
+                            <td th:text="${#numbers.formatDecimal(user.completionRate, 0, 1)} + ' %'">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div th:if="${#lists.isEmpty(topPerformers)}" class="empty-state">
+                    <p>No user performance data available.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h3>Overall Statistics</h3>
+            </div>
+            <div class="section-body">
+                <table>
+                    <tr><th>Metric</th><th>Value</th></tr>
+                    <tr><td>Total Focus Minutes</td><td th:text="${totalFocusMinutes}">0</td></tr>
+                    <tr><td>Most Productive Task</td><td th:text="${mostProductiveTask}">-</td></tr>
+                    <tr><td>Average Completion Rate</td><td th:text="${#numbers.formatDecimal(averageCompletionRate, 0, 1)} + ' %'">0 %</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,9 +6,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.scene.paint.Color;
 
+import org.springframework.stereotype.Service;
+
 /**
  * TagService - manages task tags
  */
+@Service
 public class TagService {
     private final Map<Integer, Tag> tags = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);

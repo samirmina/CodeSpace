@@ -35,19 +35,34 @@ public class Task {
 
     public int get_id() { return id; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public int getId() { return id; }
+
     public String get_title() { return title; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public String getTitle() { return title; }
 
     public void set_title(String title) { this.title = title; }
 
     public String get_description() { return description; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public String getDescription() { return description; }
+
     public void set_description(String description) { this.description = description; }
 
     public Priority get_priority() { return priority; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public Priority getPriority() { return priority; }
+
     public void set_priority(Priority priority) { this.priority = priority; }
 
     public Status get_status() { return status; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public Status getStatus() { return status; }
 
     public void set_status(Status status) {
         Status oldStatus = this.status;
@@ -69,19 +84,34 @@ public class Task {
 
     public LocalDateTime get_created_at() { return createdAt; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public LocalDateTime getCreatedAt() { return createdAt; }
+
     public LocalDateTime get_due_date() { return dueDate; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public LocalDateTime getDueDate() { return dueDate; }
 
     public void set_due_date(LocalDateTime dueDate) { this.dueDate = dueDate; }
 
     public LocalDateTime get_completed_at() { return completedAt; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public LocalDateTime getCompletedAt() { return completedAt; }
+
     public void set_completed_at(LocalDateTime completedAt) { this.completedAt = completedAt; }
 
     public int get_completion_time_minutes() { return completionTimeMinutes; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public int getCompletionTimeMinutes() { return completionTimeMinutes; }
+
     public void set_completion_time_minutes(int minutes) { this.completionTimeMinutes = minutes; }
 
     public List<String> get_tags() { return tags; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public List<String> getTags() { return tags; }
 
     public void add_tag(String tag) {
         if (tag != null && !tag.trim().isEmpty() && !tags.contains(tag.trim())) {
@@ -99,13 +129,22 @@ public class Task {
 
     public int get_assigned_user_id() { return assignedUserId; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public int getAssignedUserId() { return assignedUserId; }
+
     public void set_assigned_user_id(int userId) { this.assignedUserId = userId; }
 
     public int get_category_id() { return categoryId; }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public int getCategoryId() { return categoryId; }
+
     public void set_category_id(int categoryId) { this.categoryId = categoryId; }
 
     public boolean is_store_sessions() { return storeSessions; }
+
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public boolean isStoreSessions() { return storeSessions; }
 
     public void set_store_sessions(boolean storeSessions) { this.storeSessions = storeSessions; }
 

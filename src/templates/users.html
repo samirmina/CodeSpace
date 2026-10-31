@@ -4,33 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chronos - Users</title>
-    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 1rem; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .header p { font-size: 1.1rem; opacity: 0.9; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-        .nav { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
-        .nav a { padding: 0.75rem 1.5rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s; }
-        .nav a:hover { background: #667eea; color: white; }
-        .nav a.active { background: #667eea; color: white; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .nav { display: flex; gap: 0.5rem; }
+        .nav a { padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.3); }
+        .nav a.active { background: white; color: #667eea; font-weight: 600; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .user-badge { display: inline-block; padding: 0.2rem 0.6rem; background: #e8e8e8; color: #555; border-radius: 20px; font-size: 0.8rem; margin-bottom: 1rem; }
+        .user-badge.guest { background: #c62828; color: white; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .page-header h2 { font-size: 1.5rem; color: #333; }
-        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.3s; font-size: 0.9rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #667eea; }
+        .stat-card h3 { font-size: 2rem; color: #667eea; margin-bottom: 0.25rem; }
+        .stat-card p { color: #666; font-size: 0.85rem; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s; font-size: 0.9rem; }
         .btn-primary { background: #667eea; color: white; }
         .btn-primary:hover { background: #5568d3; }
-        .btn-danger { background: #c62828; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .btn-danger { background: #c62828; color: white; }
         .btn-danger:hover { background: #b71c1c; }
-        .btn-sm { padding: 0.25rem 0.6rem; font-size: 0.85rem; }
-        .section { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.85rem; }
+        .section { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem; }
         .section-header { padding: 1.5rem; border-bottom: 1px solid #e8e8e8; background: #f8f9fa; }
-        .section-header h2 { font-size: 1.25rem; color: #333; display: flex; align-items: center; gap: 0.5rem; }
+        .section-header h3 { font-size: 1.1rem; color: #333; }
         .section-body { padding: 1.5rem; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #e8e8e8; }
-        th { background: #f8f9fa; font-weight: 600; color: #667eea; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        th { background: #f8f9fa; font-weight: 600; color: #667eea; text-transform: uppercase; font-size: 0.85rem; }
         tr:hover { background: #f5f7fa; }
         .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
         .badge-developer { background: #e3f2fd; color: #1565c0; }
@@ -42,29 +47,54 @@
         .form-group input, .form-group select { width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
         .empty-state { text-align: center; padding: 3rem 1rem; color: #888; }
-        .footer { text-align: center; padding: 2rem; color: #888; font-size: 0.9rem; border-top: 1px solid #e8e8e8; margin-top: 2rem; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Chronos</h1>
-        <p>User Management — Web Interface</p>
+        <nav class="nav">
+            <a href="/timer">Timer</a>
+            <a href="/tasks">Tasks</a>
+            <a href="/users" class="active">Users</a>
+            <a href="/sessions">Sessions</a>
+            <a href="/reports">Reports</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Logout</a>
+        </nav>
     </div>
 
-    <nav class="nav">
-        <a href="/">Dashboard</a>
-        <a href="/users" class="active">Users</a>
-        <a href="/tasks">Tasks</a>
-        <a href="/launch">Launch JavaFX GUI</a>
-    </nav>
-
     <div class="container">
+        <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+
         <div class="page-header">
             <h2>👥 Users</h2>
-            <a href="/users/new" class="btn btn-primary">+ Add User</a>
+            <a th:if="${!isGuest}" href="/users/new" class="btn btn-primary">+ Add User</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 th:text="${totalUsers}">0</h3>
+                <p>Total Users</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${adminCount}">0</h3>
+                <p>Admins</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${devCount}">0</h3>
+                <p>Developers</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${mgrCount}">0</h3>
+                <p>Managers</p>
+            </div>
         </div>
 
         <div class="section">
+            <div class="section-header">
+                <h3>All Users</h3>
+            </div>
             <div class="section-body">
                 <table>
                     <thead>
@@ -73,9 +103,8 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
-                            <th>Tasks</th>
+                            <th>Assigned Tasks</th>
                             <th>Completed</th>
-                            <th>Created</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -87,11 +116,18 @@
                             <td><span class="badge" th:class="'badge-' + ${user.role.name().toLowerCase()}" th:text="${user.role}">-</span></td>
                             <td th:text="${user.assignedTaskIds.size()}">-</td>
                             <td th:text="${user.tasksCompletedCount}">-</td>
-                            <td th:text="${user.createdAt}">-</td>
                             <td class="actions">
                                 <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-primary">Edit</a>
+                                <form th:action="@{/users/{id}/assign-task(id=${user.id})}" method="post" style="display:inline;">
+                                    <input type="number" name="taskId" placeholder="Task ID" style="padding: 0.25rem; font-size: 0.85rem;"/>
+                                    <button type="submit" class="btn btn-sm btn-primary" th:if="${!isGuest}">Assign</button>
+                                </form>
+                                <form th:action="@{/users/{id}/unassign-task(id=${user.id})}" method="post" style="display:inline;">
+                                    <input type="number" name="taskId" placeholder="Task ID" style="padding: 0.25rem; font-size: 0.85rem;"/>
+                                    <button type="submit" class="btn btn-sm btn-danger" th:if="${!isGuest}">Unassign</button>
+                                </form>
                                 <form th:action="@{/users/{id}/delete(id=${user.id})}" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this user?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-danger" th:if="${!isGuest}" onclick="return confirm('Delete this user?')">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -102,10 +138,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="footer">
-        &copy; 2026 Chronos Team — Web Interface &amp; JavaFX Desktop GUI
     </div>
 </body>
 </html>

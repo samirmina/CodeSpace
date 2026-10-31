@@ -5,9 +5,12 @@ import models.Category;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.stereotype.Service;
+
 /**
  * CategoryService - manages task categories
  */
+@Service
 public class CategoryService {
     private final Map<Integer, Category> categories = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);

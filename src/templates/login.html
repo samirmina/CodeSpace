@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos - Login</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a1a; color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: #2a2a2a; border: 2px solid #4caf7a; border-radius: 10px; padding: 24px; max-width: 400px; width: 90%; text-align: center; }
+        .login-card h1 { font-weight: 900; color: #4caf7a; letter-spacing: 2px; margin-bottom: 4px; font-size: 2rem; }
+        .login-card p { color: #ccc; font-weight: bold; margin-bottom: 12px; font-size: 0.9rem; }
+        .user-list { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-bottom: 16px; }
+        .user-btn { background: #3a3a3a; color: #fff; border: 1px solid #4caf7a; border-radius: 6px; padding: 10px 20px; width: 260px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .user-btn:hover { background: #4caf7a; color: #1a1a1a; }
+        .guest-btn { background: transparent; color: #888; border: 1px solid #555; border-radius: 6px; padding: 10px 20px; width: 260px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .guest-btn:hover { background: #555; color: #fff; }
+        .empty { color: #888; font-size: 12px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>Chronos</h1>
+        <p>Select your profile to continue</p>
+        <div class="user-list">
+            <div th:if="${#lists.isEmpty(users)}" class="empty">No users found. Starting as guest.</div>
+            <div th:each="user : ${users}">
+                <form th:action="@{/login}" method="post">
+                    <input type="hidden" name="userId" th:value="${user.id}"/>
+                    <button type="submit" class="user-btn" th:text="${user.name} + '  (' + ${user.role} + ')'">User (Role)</button>
+                </form>
+            </div>
+        </div>
+        <form th:action="@{/login}" method="post">
+            <input type="hidden" name="guest" value="true"/>
+            <button type="submit" class="guest-btn">Cancel — Enter as Guest</button>
+        </form>
+    </div>
+</body>
+</html>
