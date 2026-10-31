@@ -195,7 +195,7 @@
                 </executions>
             </plugin>
 
-            <!-- JPackage Plugin for Native Installers -->
+            <!-- JPackage Plugin for Native Installers (on hold - not available on Maven Central)
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>jpackage-maven-plugin</artifactId>
@@ -227,6 +227,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
 
             <!-- Exec Plugin for running -->
             <plugin>
