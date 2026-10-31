@@ -71,4 +71,4 @@ logs/
 
 # Kilo agent configuration (not project source)
 .agents/
-.config/
+.config/user-creator/*
