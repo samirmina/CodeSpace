@@ -117,35 +117,42 @@ public class WebController {
 
     @GetMapping("/timer")
     public String timer(HttpSession session, Model model) {
-        User currentUser = getCurrentUser(session);
-        if (currentUser == null) return "redirect:/login";
+        try {
+            User currentUser = getCurrentUser(session);
+            if (currentUser == null) return "redirect:/login";
 
-        long userId = currentUser.get_id();
-        model.addAttribute("currentUser", currentUser);
+            long userId = currentUser.get_id();
+            model.addAttribute("currentUser", currentUser);
 
-        // Default duration
-        int defaultDuration = settingsService.getSettings().getDefaultPomodoroDuration();
-        model.addAttribute("defaultDuration", defaultDuration);
+            // Default duration
+            int defaultDuration = settingsService.getSettings().getDefaultPomodoroDuration();
+            model.addAttribute("defaultDuration", defaultDuration);
 
-        // Available tasks for this user
-        List<Task> tasks = taskService.get_all_tasks(userId);
-        model.addAttribute("tasks", tasks);
+            // Available tasks for this user
+            List<Task> tasks = taskService.get_all_tasks(userId);
+            model.addAttribute("tasks", tasks);
 
-        // Pomodoro stats for this user
-        model.addAttribute("totalSessions", pomodoroService.get_total_sessions());
-        model.addAttribute("totalFocusMinutes", pomodoroService.get_total_focus_time_minutes());
-        model.addAttribute("storedSessions", pomodoroService.get_total_stored_sessions(taskService));
-        model.addAttribute("storedFocusMinutes", pomodoroService.get_total_stored_focus_time_minutes(taskService));
-        model.addAttribute("activeDays", pomodoroService.get_active_days_count());
-        model.addAttribute("mostProductiveTask", pomodoroService.get_most_productive_task());
+            // Pomodoro stats for this user
+            model.addAttribute("totalSessions", pomodoroService.get_total_sessions());
+            model.addAttribute("totalFocusMinutes", pomodoroService.get_total_focus_time_minutes());
+            model.addAttribute("storedSessions", pomodoroService.get_total_stored_sessions(taskService));
+            model.addAttribute("storedFocusMinutes", pomodoroService.get_total_stored_focus_time_minutes(taskService));
+            model.addAttribute("activeDays", pomodoroService.get_active_days_count());
+            model.addAttribute("mostProductiveTask", pomodoroService.get_most_productive_task());
 
-        // Active pomodoros
-        model.addAttribute("activePomodoros", pomodoroService.get_active_pomodoros());
+            // Active pomodoros
+            model.addAttribute("activePomodoros", pomodoroService.get_active_pomodoros());
 
-        // Recent sessions
-        model.addAttribute("recentSessions", pomodoroService.get_last_sessions(10));
+            // Recent sessions
+            model.addAttribute("recentSessions", pomodoroService.get_last_sessions(10));
 
-        return "timer";
+            return "timer";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("stackTrace", e.getStackTrace());
+            return "error";
+        }
     }
 
     @PostMapping("/timer/start")

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Chronos</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .error-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; width: 90%; }
+        .error-header { color: #c62828; margin-bottom: 1rem; }
+        .error-message { background: #fdecea; border: 1px solid #ef9a9a; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-family: monospace; white-space: pre-wrap; }
+        .stack-trace { background: #263238; color: #aed581; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; max-height: 400px; overflow: auto; }
+        .btn { display: inline-block; padding: 0.75rem 1.5rem; background: #667eea; color: white; text-decoration: none; border-radius: 6px; margin-top: 1rem; transition: all 0.2s; }
+        .btn:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <h1 class="error-header">⚠ Application Error</h1>
+        <div th:if="${error}" class="error-message" th:text="${error}">Error message</div>
+        <div th:if="${stackTrace}" class="stack-trace">
+            <div th:each="frame : ${stackTrace}" th:text="${frame}">Stack frame</div>
+        </div>
+        <a href="/timer" class="btn">Retry Timer</a>
+        <a href="/login" class="btn" style="margin-left: 1rem; background: #666;">Back to Login</a>
+    </div>
+</body>
+</html>
