@@ -35,4 +35,4 @@ ENV DB_PASSWORD=chronos
 ENV APP_DATA_DIR=/app/data
 
 # Run the Spring Boot web application
-ENTRYPOINT ["java", "--enable-preview", "-jar", "/app/chronos.jar"]
+ENTRYPOINT ["java", "-jar", "/app/chronos.jar"]
