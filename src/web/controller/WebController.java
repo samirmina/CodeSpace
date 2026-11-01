@@ -170,6 +170,33 @@ public class WebController {
         }
     }
 
+    // Debug endpoint to test task loading
+    @GetMapping("/debug/tasks")
+    @ResponseBody
+    public Map<String, Object> debugTasks(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User currentUser = getCurrentUser(session);
+        if (currentUser == null) {
+            result.put("error", "Not authenticated");
+            return result;
+        }
+        long userId = currentUser.get_id();
+        List<Task> tasks = taskService.get_all_tasks(userId);
+        result.put("userId", userId);
+        result.put("taskCount", tasks.size());
+        List<Map<String, Object>> taskList = new ArrayList<>();
+        for (Task t : tasks) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", t.getId());
+            m.put("title", t.getTitle());
+            m.put("priority", t.getPriority() != null ? t.getPriority().name() : "null");
+            m.put("status", t.getStatus() != null ? t.getStatus().name() : "null");
+            taskList.add(m);
+        }
+        result.put("tasks", taskList);
+        return result;
+    }
+
     @PostMapping("/timer/start")
     public RedirectView startTimer(@RequestParam("taskId") Integer taskId,
                                    @RequestParam("durationMinutes") Integer durationMinutes,
