@@ -2,6 +2,7 @@ package services;
 
 import models.Pomodoro;
 import models.Task;
+import models.RecentSessionDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -354,17 +355,17 @@ public class PomodoroService {
     }
 
     // Get last N sessions - returns list of (taskName, timestamp, durationMinutes) sorted by time descending
-    public List<javafx.util.Pair<String, javafx.util.Pair<LocalDateTime, Integer>>> get_last_sessions(int n) {
-        java.util.List<javafx.util.Pair<String, javafx.util.Pair<LocalDateTime, Integer>>> all = new java.util.ArrayList<>();
+    public List<RecentSessionDTO> get_last_sessions(int n) {
+        List<RecentSessionDTO> all = new ArrayList<>();
         for (Pomodoro p : pomodoros.values()) {
             List<LocalDateTime> history = p.get_session_history();
             List<Integer> durations = p.get_session_durations();
             int size = Math.min(history.size(), durations.size());
             for (int i = 0; i < size; i++) {
-                all.add(new javafx.util.Pair<>(p.get_task_name(), new javafx.util.Pair<>(history.get(i), durations.get(i))));
+                all.add(new RecentSessionDTO(p.get_task_name(), history.get(i), durations.get(i)));
             }
         }
-        all.sort((a, b) -> b.getValue().getKey().compareTo(a.getValue().getKey()));
+        all.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
         return all.subList(0, Math.min(n, all.size()));
     }
 

@@ -165,14 +165,13 @@
                 <h3>🕒 Recent Sessions</h3>
                 <table>
                     <thead>
-                        <tr><th>Task</th><th>Sessions</th><th>Focus (min)</th><th>Date</th></tr>
+                        <tr><th>Task</th><th>Duration (min)</th><th>Date</th></tr>
                     </thead>
                     <tbody>
                         <tr th:each="session : ${recentSessions}">
-                            <td th:text="${session.key}">-</td>
-                            <td th:text="${session.value.value}">-</td>
-                            <td>-</td>
-                            <td th:text="${session.value.key}">-</td>
+                            <td th:text="${session.taskName}">-</td>
+                            <td th:text="${session.durationMinutes}">-</td>
+                            <td th:text="${#temporals.format(session.timestamp, 'yyyy-MM-dd HH:mm')}">-</td>
                         </tr>
                     </tbody>
                 </table>
