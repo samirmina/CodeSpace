@@ -137,7 +137,7 @@ public class TaskService {
     // Get all tasks for a specific user - for web app multi-user support
     public List<Task> get_all_tasks(long userId) {
         if (usePostgres && postgresTaskDAO != null) {
-            return postgresTaskDAO.getAllTasksByUser(userId);
+            return postgresTaskDAO.getTasksByUserId(userId);
         }
         return get_all_tasks().stream()
                 .filter(t -> t.get_assigned_user_id() == (int) userId || t.get_assigned_user_id() == -1)

@@ -48,7 +48,7 @@ public class PostgresTaskDAO {
         return DriverManager.getConnection(url, user, password);
     }
 
-    public List<Task> getAllTasksByUser(long userId) {
+    public List<Task> getTasksByUserId(long userId) {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT id, title, description, priority, status, created_at, due_date, " +
                      "completed_at, completion_time_minutes, assigned_user_id, category_id, store_sessions, tags " +
