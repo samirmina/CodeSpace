@@ -171,7 +171,7 @@
                         <tr th:each="session : ${recentSessions}">
                             <td th:text="${session.taskName}">-</td>
                             <td th:text="${session.durationMinutes}">-</td>
-                            <td th:text="${#temporals.format(session.timestamp, 'yyyy-MM-dd HH:mm')}">-</td>
+                            <td th:text="${session.timestamp}">-</td>
                         </tr>
                     </tbody>
                 </table>

@@ -7,6 +7,7 @@ import services.CategoryService;
 import services.TagService;
 import services.SettingsService;
 import services.ReportService;
+import models.RecentSessionDTO;
 import models.User;
 import models.Task;
 import models.Role;
@@ -24,9 +25,13 @@ import org.springframework.web.servlet.view.RedirectView;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * WebController - handles all web UI routes with multi-user support.
@@ -143,8 +148,18 @@ public class WebController {
             // Active pomodoros
             model.addAttribute("activePomodoros", pomodoroService.get_active_pomodoros());
 
-            // Recent sessions
-            model.addAttribute("recentSessions", pomodoroService.get_last_sessions(10));
+            // Recent sessions - format timestamps in controller
+            List<RecentSessionDTO> recentSessions = pomodoroService.get_last_sessions(10);
+            List<Map<String, Object>> formattedSessions = new ArrayList<>();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            for (RecentSessionDTO s : recentSessions) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("taskName", s.getTaskName());
+                m.put("durationMinutes", s.getDurationMinutes());
+                m.put("timestamp", s.getTimestamp() != null ? s.getTimestamp().format(formatter) : "-");
+                formattedSessions.add(m);
+            }
+            model.addAttribute("recentSessions", formattedSessions);
 
             return "timer";
         } catch (Exception e) {
