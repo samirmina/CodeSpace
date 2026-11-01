@@ -81,7 +81,7 @@
 
     <div class="container">
         <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
-        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + currentUser.name + ' (' + currentUser.role + ')'}">User</div>
 
         <div class="timer-panel">
             <h2>🍅 Pomodoro Timer</h2>
@@ -147,7 +147,7 @@
             </div>
 
             <div th:if="${mostProductiveTask}" style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; color: #1565c0;">
-                <strong>🏆 Most Productive Task:</strong> <span th:text="${mostProductive}">-</span>
+                <strong>🏆 Most Productive Task:</strong> <span th:text="${mostProductiveTask}">-</span>
             </div>
 
             <div class="active-sessions" th:if="${!#lists.isEmpty(activePomodoros)}">

@@ -74,7 +74,7 @@
 
     <div class="container">
         <div th:if="${isGuest}" class="user-badge guest">Guest Mode</div>
-        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + ${currentUser.name} + ' (' + ${currentUser.role} + ')}">User</div>
+        <div th:unless="${isGuest}" class="user-badge" th:text="${'User: ' + currentUser.name + ' (' + currentUser.role + ')'}">User</div>
 
         <div class="page-header">
             <h2>📋 Tasks</h2>

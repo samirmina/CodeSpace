@@ -60,6 +60,10 @@ public class PostgresUserDAO {
                 );
                 user.set_created_at(rs.getTimestamp("created_at").toLocalDateTime());
                 user.set_last_active_at(rs.getTimestamp("updated_at").toLocalDateTime());
+
+                // Load assigned task IDs and completed count
+                loadUserTaskData(conn, user);
+
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -67,6 +71,25 @@ public class PostgresUserDAO {
         }
 
         return users;
+    }
+
+    private void loadUserTaskData(Connection conn, User user) throws SQLException {
+        String taskSql = "SELECT id, status FROM tasks WHERE assigned_user_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(taskSql)) {
+            pstmt.setLong(1, user.get_id());
+            ResultSet rs = pstmt.executeQuery();
+            int completedCount = 0;
+            while (rs.next()) {
+                user.assign_task(rs.getInt("id"));
+                if ("COMPLETED".equals(rs.getString("status"))) {
+                    completedCount++;
+                }
+            }
+            // Set completed count directly since assign_task doesn't increment it
+            for (int i = 0; i < completedCount; i++) {
+                user.increment_completed_count();
+            }
+        }
     }
 
     public User getUserById(long id) {
@@ -87,6 +110,10 @@ public class PostgresUserDAO {
                 );
                 user.set_created_at(rs.getTimestamp("created_at").toLocalDateTime());
                 user.set_last_active_at(rs.getTimestamp("updated_at").toLocalDateTime());
+                
+                // Load assigned task IDs and completed count
+                loadUserTaskData(conn, user);
+
                 return user;
             }
         } catch (SQLException e) {

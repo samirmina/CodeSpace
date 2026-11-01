@@ -140,6 +140,11 @@ public class User {
         return (tasksCompletedCount * 100.0) / total;
     }
 
+    // Standard JavaBean getter for Thymeleaf compatibility
+    public double getCompletionRate() {
+        return get_completion_rate();
+    }
+
     // Check if user is admin - returns true if role is ADMIN
     public boolean is_admin() {
         return role == Role.ADMIN;

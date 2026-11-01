@@ -28,7 +28,7 @@
             <div th:each="user : ${users}">
                 <form th:action="@{/login}" method="post">
                     <input type="hidden" name="userId" th:value="${user.id}"/>
-                    <button type="submit" class="user-btn" th:text="${user.name} + '  (' + ${user.role} + ')'">User (Role)</button>
+                    <button type="submit" class="user-btn" th:text="${user.name + '  (' + user.role + ')'}">User (Role)</button>
                 </form>
             </div>
         </div>
