@@ -78,7 +78,7 @@ public class WebController {
     }
 
     @PostMapping("/login")
-    public String selectUser(@RequestParam(required = false) Integer userId,
+    public String selectUser(@RequestParam("userId") Integer userId,
                              HttpServletRequest request) {
         HttpSession session = request.getSession();
         User selected = null;
@@ -149,8 +149,8 @@ public class WebController {
     }
 
     @PostMapping("/timer/start")
-    public RedirectView startTimer(@RequestParam Integer taskId,
-                                   @RequestParam(required = false) Integer durationMinutes,
+    public RedirectView startTimer(@RequestParam("taskId") Integer taskId,
+                                   @RequestParam("durationMinutes") Integer durationMinutes,
                                    HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
@@ -253,9 +253,9 @@ public class WebController {
 
     @PostMapping("/tasks")
     public RedirectView createTask(@ModelAttribute Task task,
-                                   @RequestParam(required = false) Integer assignedUserId,
-                                   @RequestParam(required = false) Integer categoryId,
-                                   @RequestParam(required = false) Boolean storeSessions,
+                                   @RequestParam("assignedUserId") Integer assignedUserId,
+                                   @RequestParam("categoryId") Integer categoryId,
+                                   @RequestParam("storeSessions") Boolean storeSessions,
                                    HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
@@ -291,9 +291,9 @@ public class WebController {
 
     @PostMapping("/tasks/{id}")
     public RedirectView updateTask(@PathVariable int id, @ModelAttribute Task task,
-                                   @RequestParam(required = false) Integer assignedUserId,
-                                   @RequestParam(required = false) Integer categoryId,
-                                   @RequestParam(required = false) Boolean storeSessions,
+                                   @RequestParam("assignedUserId") Integer assignedUserId,
+                                   @RequestParam("categoryId") Integer categoryId,
+                                   @RequestParam("storeSessions") Boolean storeSessions,
                                    HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
@@ -542,7 +542,7 @@ public class WebController {
     }
 
     @PostMapping("/settings/notification-sound")
-    public RedirectView setNotificationSound(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+    public RedirectView setNotificationSound(@RequestParam("enabled") Boolean enabled, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setNotificationSound(enabled != null && enabled);
@@ -550,7 +550,7 @@ public class WebController {
     }
 
     @PostMapping("/settings/auto-start")
-    public RedirectView setAutoStart(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+    public RedirectView setAutoStart(@RequestParam("enabled") Boolean enabled, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setAutoStartNextSession(enabled != null && enabled);
@@ -558,7 +558,7 @@ public class WebController {
     }
 
     @PostMapping("/settings/show-all-tasks")
-    public RedirectView setShowAllTasks(@RequestParam(required = false) Boolean enabled, HttpSession session) {
+    public RedirectView setShowAllTasks(@RequestParam("enabled") Boolean enabled, HttpSession session) {
         User currentUser = getCurrentUser(session);
         if (currentUser == null) return new RedirectView("/login");
         settingsService.getSettings().setShowAllTasks(enabled != null && enabled);
