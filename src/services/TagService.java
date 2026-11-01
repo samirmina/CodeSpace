@@ -2,6 +2,7 @@ package services;
 
 import models.Tag;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,6 +27,7 @@ public class TagService {
     }
 
     // Constructor with PostgreSQL DAO for web app
+    @Autowired
     public TagService(PostgresTagDAO postgresTagDAO) {
         this.postgresTagDAO = postgresTagDAO;
         this.usePostgres = true;

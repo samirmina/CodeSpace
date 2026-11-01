@@ -3,6 +3,7 @@ package services;
 import models.Pomodoro;
 import models.Task;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class PomodoroService {
     }
 
     // Constructor with PostgreSQL DAO for web app
+    @Autowired
     public PomodoroService(PostgresPomodoroDAO postgresPomodoroDAO) {
         this.postgresPomodoroDAO = postgresPomodoroDAO;
         this.usePostgres = true;

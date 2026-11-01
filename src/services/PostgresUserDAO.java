@@ -3,6 +3,8 @@ package services;
 import models.Role;
 import models.User;
 
+import org.springframework.stereotype.Component;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.List;
  * Provides CRUD operations directly against the chronos database.
  * Reads connection parameters from Config (config.properties).
  */
+@Component
 public class PostgresUserDAO {
     private final String url;
     private final String user;

@@ -4,6 +4,7 @@ import models.Role;
 import models.Task;
 import models.User;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -29,6 +30,7 @@ public class UserService {
     }
 
     // Constructor with PostgreSQL DAO for web app
+    @Autowired
     public UserService(PostgresUserDAO postgresUserDAO) {
         this.postgresUserDAO = postgresUserDAO;
         this.usePostgres = true;

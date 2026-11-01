@@ -2,6 +2,7 @@ package services;
 
 import models.Category;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,6 +26,7 @@ public class CategoryService {
     }
 
     // Constructor with PostgreSQL DAO for web app
+    @Autowired
     public CategoryService(PostgresCategoryDAO postgresCategoryDAO) {
         this.postgresCategoryDAO = postgresCategoryDAO;
         this.usePostgres = true;

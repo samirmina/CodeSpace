@@ -1,5 +1,7 @@
 package services;
 
+import org.springframework.stereotype.Component;
+
 import models.Category;
 import models.Priority;
 import models.Status;

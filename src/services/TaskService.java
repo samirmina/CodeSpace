@@ -4,6 +4,7 @@ import models.Priority;
 import models.Status;
 import models.Task;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class TaskService {
     }
 
     // Constructor with PostgreSQL DAO for web app
+    @Autowired
     public TaskService(PostgresTaskDAO postgresTaskDAO) {
         this.postgresTaskDAO = postgresTaskDAO;
         this.usePostgres = true;

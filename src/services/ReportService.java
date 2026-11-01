@@ -6,11 +6,12 @@ import models.Task;
 import models.User;
 import utils.FileUtils;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import org.springframework.stereotype.Service;
 
 /**
  * ReportService - generates various reports and statistics
@@ -30,6 +31,7 @@ public class ReportService {
     }
 
     // Create report service with pomodoro - enables full analytics
+    @Autowired
     public ReportService(TaskService taskService, UserService userService, PomodoroService pomodoroService) {
         this.taskService = taskService;
         this.userService = userService;

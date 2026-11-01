@@ -2,6 +2,7 @@ package services;
 
 import models.AppSettings;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class SettingsService {
     private AppSettings settings;
 
+    @Autowired
     public SettingsService() {
         this.settings = new AppSettings();
     }
