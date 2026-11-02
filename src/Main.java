@@ -71,7 +71,6 @@ public class Main extends Application {
         LoginView loginView = new LoginView(userService);
         Scene loginScene = new Scene(loginView, 760, 760);
         loginScene.setFill(Color.TRANSPARENT);
-        loginScene.getStylesheets().add("style.css");
 
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setTitle("Chronos");
@@ -79,7 +78,6 @@ public class Main extends Application {
         stage.setResizable(false);
         stage.setScene(loginScene);
         stage.centerOnScreen();
-        stage.show();
 
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
         pause.setOnFinished(e -> {
@@ -142,7 +140,6 @@ public class Main extends Application {
         mainView = new MainView(selectedUser, taskService, userService, pomodoroService, storage, settingsService, categoryService, tagService, postgresUserDAO, this::logout_and_relogin);
         Scene mainScene = new Scene(mainView, 760, 760);
         mainScene.setFill(null);
-        mainScene.getStylesheets().add("style.css");
         stage.setScene(mainScene);
         stage.centerOnScreen();
     }
@@ -164,7 +161,6 @@ public class Main extends Application {
         LoginView loginView = new LoginView(userService);
         Scene loginScene = new Scene(loginView, 760, 760);
         loginScene.setFill(Color.TRANSPARENT);
-        loginScene.getStylesheets().add("style.css");
 
         Stage stage = (Stage) mainView.getScene().getWindow();
         stage.setScene(loginScene);
