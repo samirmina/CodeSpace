@@ -5,6 +5,7 @@ import models.Status;
 import models.Task;
 import models.User;
 import utils.FileUtils;
+import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.util.*;
  * ReportService - generates various reports and statistics
  * Provides methods to create summary, performance, and export reports
  */
+@Service
 public class ReportService {
     private final TaskService taskService;
     private final UserService userService;
