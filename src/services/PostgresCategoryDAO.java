@@ -2,7 +2,6 @@ package services;
 
 import models.Category;
 
-import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Optional;
  * PostgresCategoryDAO - PostgreSQL-backed category repository with user isolation.
  * All queries are filtered by user_id to ensure data isolation between clients.
  */
-@Service
 public class PostgresCategoryDAO {
     private final String url;
     private final String user;
