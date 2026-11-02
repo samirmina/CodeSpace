@@ -102,6 +102,55 @@ public class HtmlRenderer {
         sb.append(text);
     }
 
+    public String renderHomePage(User currentUser) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Chronos — Pomodoro &amp; Task Manager</title>\n");
+        s(sb, CSS);
+        sb.append("</head>\n<body>\n<div class=\"container\">\n");
+
+        s(sb, "<nav class=\"header\">\n<h1>&#128325; Chronos</h1>\n<div class=\"nav\">\n");
+        s(sb, "<a href=\"/timer\" class=\"active\">Timer</a>\n");
+        s(sb, "<a href=\"/tasks\">Tasks</a>\n");
+        s(sb, "<a href=\"/users\">Users</a>\n");
+        s(sb, "<a href=\"/sessions\">Sessions</a>\n");
+        s(sb, "<a href=\"/reports\">Reports</a>\n");
+        s(sb, "<a href=\"/settings\">Settings</a>\n");
+        s(sb, "<a href=\"/logout\" style=\"background: rgba(255,255,255,0.2);\">Logout</a>\n");
+        s(sb, "</div>\n</div>\n");
+
+        if (currentUser == null) {
+            s(sb, "<div class=\"card\" style=\"max-width: 700px; margin: 2rem auto;\">\n");
+            s(sb, "<h2>Welcome to Chronos</h2>\n");
+            s(sb, "<p>Chronos is a Pomodoro &amp; Task Manager built entirely in Java. Track your focus sessions, manage tasks, and view productivity reports — all in a clean, professional interface.</p>\n");
+            s(sb, "<h3>Key Features</h3>\n");
+            s(sb, "<ul>\n<li><strong>&#128325; Pomodoro Timer</strong> — timed focus sessions with task selection and custom duration</li>\n<li><strong>&#128391; Task Management</strong> — CRUD tasks with priority, status, tags, due dates, and user assignment</li>\n<li><strong>&#128103; Multi-User</strong> — role-based access (Admin, Developer, Manager) with per-user data isolation</li>\n<li><strong>&#128198; Sessions</strong> — track every pomodoro session and view active timers</li>\n<li><strong>&#128197; Reports</strong> — completion rates, top performers, and task status breakdowns</li>\n<li><strong>&#9881; Settings</strong> — theme, default duration, notifications, auto-start, and daily focus goals</li>\n</ul>\n");
+            s(sb, "<p>Get started by selecting your profile below.</p>\n");
+            s(sb, "<form method=\"post\" action=\"/login\">\n");
+            s(sb, "<div class=\"form-group\">\n<label>Select Your Profile</label>\n<select name=\"userId\" class=\"form-control\" required>\n");
+            s(sb, "<option value=\"\">-- Select a user --</option>\n");
+            s(sb, "<option value=\"0\">Guest (read-only)</option>\n");
+            s(sb, "</select>\n</div>\n");
+            s(sb, "<button type=\"submit\" class=\"btn btn-primary\" style=\"width: 100%;\">Enter Chronos</button>\n");
+            s(sb, "</form>\n");
+            s(sb, "</div>\n");
+        } else {
+            s(sb, "<div class=\"card\" style=\"max-width: 700px; margin: 2rem auto;\">\n");
+            s(sb, "<h2>Welcome back, " + escapeHtml(currentUser.get_name()) + "!</h2>\n");
+            s(sb, "<p>You're logged in as <strong>" + escapeHtml(currentUser.get_name()) + "</strong> (" + currentUser.get_role() + ").</p>\n");
+            s(sb, "<div class=\"stat-grid\">\n");
+            s(sb, renderStatCard("Timer", "Start a focus session"));
+            s(sb, renderStatCard("Tasks", "Manage your task list"));
+            s(sb, renderStatCard("Sessions", "View your pomodoro history"));
+            s(sb, renderStatCard("Reports", "See your productivity stats"));
+            s(sb, "</div>\n");
+            s(sb, "<p>Choose a page from the navigation above to get started.</p>\n");
+            s(sb, "</div>\n");
+        }
+
+        s(sb, "</div>\n</body>\n</html>");
+        return sb.toString();
+    }
+
     public String renderLoginPage(List<User> users, String flashMessage, String flashType) {
         StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Chronos - Login</title>\n");
