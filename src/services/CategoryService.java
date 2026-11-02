@@ -2,8 +2,6 @@ package services;
 
 import models.Category;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * CategoryService - manages task categories.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
-@Service
 public class CategoryService {
     private final Map<Integer, Category> categories = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
@@ -26,7 +23,6 @@ public class CategoryService {
     }
 
     // Constructor with PostgreSQL DAO for web app
-    @Autowired
     public CategoryService(PostgresCategoryDAO postgresCategoryDAO) {
         this.postgresCategoryDAO = postgresCategoryDAO;
         this.usePostgres = true;
