@@ -3,7 +3,6 @@ package services;
 import models.Pomodoro;
 import models.Task;
 
-import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -15,7 +14,6 @@ import java.util.Optional;
  * PostgresPomodoroDAO - PostgreSQL-backed pomodoro repository with user isolation.
  * All queries are filtered by user_id to ensure data isolation between clients.
  */
-@Service
 public class PostgresPomodoroDAO {
     private final String url;
     private final String user;
@@ -64,7 +62,6 @@ public class PostgresPomodoroDAO {
                 );
                 p.set_completed_sessions(rs.getInt("completed_sessions"));
                 if (rs.getTimestamp("last_session_date") != null) {
-                    // Use reflection or direct field access via setter
                     p.set_last_session_date(rs.getTimestamp("last_session_date").toLocalDateTime());
                 }
                 p.set_active(rs.getBoolean("is_active"));
