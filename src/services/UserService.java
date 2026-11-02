@@ -4,8 +4,6 @@ import models.Role;
 import models.Task;
 import models.User;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -16,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * UserService - manages all user operations including CRUD and role filtering.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
-@Service
 public class UserService {
     private final Map<Integer, User> users = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
@@ -30,7 +27,6 @@ public class UserService {
     }
 
     // Constructor with PostgreSQL DAO for web app
-    @Autowired
     public UserService(PostgresUserDAO postgresUserDAO) {
         this.postgresUserDAO = postgresUserDAO;
         this.usePostgres = true;
