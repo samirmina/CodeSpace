@@ -3,6 +3,7 @@ package services;
 import models.Pomodoro;
 import models.Task;
 import models.RecentSessionDTO;
+import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * PomodoroService - manages all pomodoro timer sessions.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
+@Service
 public class PomodoroService {
     private final Map<Integer, Pomodoro> pomodoros = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
