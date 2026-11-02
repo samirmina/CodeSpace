@@ -60,8 +60,15 @@ public class WebController {
     }
 
     @GetMapping("/")
-    public RedirectView root() {
-        return new RedirectView("/login");
+    public Object home(HttpSession session) {
+        User u = currentUser(session);
+        if (u == null) {
+            String html = renderer.renderHomePage(null);
+            return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
+        }
+        return new RedirectView("/timer");
     }
 
     @GetMapping("/login")
