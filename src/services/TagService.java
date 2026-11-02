@@ -2,18 +2,14 @@ package services;
 
 import models.Tag;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import javafx.scene.paint.Color;
 
 /**
  * TagService - manages task tags.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
-@Service
 public class TagService {
     private final Map<Integer, Tag> tags = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
@@ -27,7 +23,6 @@ public class TagService {
     }
 
     // Constructor with PostgreSQL DAO for web app
-    @Autowired
     public TagService(PostgresTagDAO postgresTagDAO) {
         this.postgresTagDAO = postgresTagDAO;
         this.usePostgres = true;
