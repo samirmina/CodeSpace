@@ -9,6 +9,8 @@ import models.Pomodoro;
 import services.PomodoroService;
 import services.TaskService;
 import services.UserService;
+import org.springframework.stereotype.Component;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +21,7 @@ import java.util.Map;
  * HtmlRenderer - generates all HTML programmatically with inline CSS.
  * No external HTML or CSS files are used - everything is built in Java.
  */
+@Component
 public class HtmlRenderer {
 
     private static final DateTimeFormatter TS_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
