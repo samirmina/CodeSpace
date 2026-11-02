@@ -20,11 +20,11 @@ services:
     networks:
       - chronos-network
 
-  chronos-web:
+  chronos-app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: chronos-web
+    container_name: chronos-app
     restart: unless-stopped
     depends_on:
       postgres:
@@ -34,10 +34,12 @@ services:
       DB_USER: chronos
       DB_PASSWORD: chronos
       APP_DATA_DIR: /app/data
-    ports:
-      - "8080:8080"
+      DISPLAY: :99
+    environment:
+      - DISPLAY=${DISPLAY:-:99}
     volumes:
       - chronos_data:/app/data
+      - /tmp/.X11-unix:/tmp/.X11-unix
     networks:
       - chronos-network
 
