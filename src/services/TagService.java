@@ -1,6 +1,7 @@
 package services;
 
 import models.Tag;
+import org.springframework.stereotype.Service;
 
 
 import java.util.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * TagService - manages task tags.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
+@Service
 public class TagService {
     private final Map<Integer, Tag> tags = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
