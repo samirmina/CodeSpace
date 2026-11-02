@@ -3,6 +3,7 @@ package services;
 import models.Priority;
 import models.Status;
 import models.Task;
+import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * TaskService - manages all task operations including CRUD, filtering, and statistics.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
+@Service
 public class TaskService {
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
