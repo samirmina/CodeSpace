@@ -4,8 +4,6 @@ import models.Priority;
 import models.Status;
 import models.Task;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -15,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * TaskService - manages all task operations including CRUD, filtering, and statistics.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
-@Service
 public class TaskService {
     private final Map<Integer, Task> tasks = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
@@ -29,7 +26,6 @@ public class TaskService {
     }
 
     // Constructor with PostgreSQL DAO for web app
-    @Autowired
     public TaskService(PostgresTaskDAO postgresTaskDAO) {
         this.postgresTaskDAO = postgresTaskDAO;
         this.usePostgres = true;
@@ -39,11 +35,6 @@ public class TaskService {
     private void loadFromDatabase() {
         if (!usePostgres) return;
         try {
-            // Load all tasks - in multi-user mode, this loads all tasks
-            // User-specific filtering is done at the query level
-            // For now, we load all and filter in memory
-            // Note: PostgresTaskDAO.getAllTasksByUser requires a userId
-            // We'll load tasks lazily per user instead
             System.out.println("ℹ TaskService initialized with PostgreSQL DAO");
         } catch (Exception e) {
             System.err.println("⚠ Could not initialize TaskService with PostgreSQL: " + e.getMessage());
@@ -61,7 +52,6 @@ public class TaskService {
         tasks.put(id, task);
 
         if (usePostgres) {
-            // Note: Task creation for web app requires userId - use create_task with userId instead
             System.out.println("⚠ Use create_task(title, description, priority, userId) for PostgreSQL mode");
         }
 
@@ -151,7 +141,7 @@ public class TaskService {
         task.set_status(status);
         if (usePostgres && postgresTaskDAO != null) {
             try {
-                postgresTaskDAO.updateTask(task, -1); // userId not tracked in legacy mode
+                postgresTaskDAO.updateTask(task, -1);
             } catch (Exception e) {
                 System.err.println("⚠ Failed to update task in PostgreSQL: " + e.getMessage());
             }
@@ -353,7 +343,7 @@ public class TaskService {
         return incomplete;
     }
 
-    // Filter urgent incomplete tasks - returns HIGH or URGENT priority incomplete tasks
+    // Get urgent incomplete tasks - returns HIGH or URGENT priority incomplete tasks
     public List<Task> get_urgent_incomplete_tasks() {
         List<Task> urgent = new ArrayList<>();
         for (Task task : tasks.values()) {
