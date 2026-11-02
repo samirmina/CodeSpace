@@ -2,6 +2,7 @@ package services;
 
 import models.Pomodoro;
 import models.Task;
+import org.springframework.stereotype.Component;
 
 
 import java.sql.*;
@@ -14,6 +15,7 @@ import java.util.Optional;
  * PostgresPomodoroDAO - PostgreSQL-backed pomodoro repository with user isolation.
  * All queries are filtered by user_id to ensure data isolation between clients.
  */
+@Component
 public class PostgresPomodoroDAO {
     private final String url;
     private final String user;
