@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>Chronos</name>
-    <description>Pomodoro &amp; Task Manager with JavaFX</description>
+    <description>Pomodoro &amp; Task Manager - Pure Java Backend</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -19,7 +19,7 @@
         <javafx.version>21.0.1</javafx.version>
         <junit.version>5.10.2</junit.version>
         <postgresql.version>42.7.3</postgresql.version>
-        <main.class>Main</main.class>
+        <main.class>web.ChronosWebApplication</main.class>
     </properties>
 
     <repositories>
@@ -58,6 +58,13 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
+        </dependency>
+
+        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.3.0</version>
         </dependency>
 
         <!-- JUnit 5 -->
@@ -158,6 +165,23 @@
                         <argument>--enable-preview</argument>
                     </arguments>
                 </configuration>
+            </plugin>
+
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
