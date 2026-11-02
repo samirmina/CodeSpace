@@ -5,6 +5,7 @@ import models.Priority;
 import models.Status;
 import models.Task;
 import models.User;
+import org.springframework.stereotype.Component;
 
 
 import java.sql.*;
@@ -16,6 +17,7 @@ import java.util.List;
  * PostgresTaskDAO - PostgreSQL-backed task repository with user isolation.
  * All queries are filtered by user_id to ensure data isolation between clients.
  */
+@Component
 public class PostgresTaskDAO {
     private final String url;
     private final String user;
