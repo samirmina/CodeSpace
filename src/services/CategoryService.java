@@ -1,6 +1,7 @@
 package services;
 
 import models.Category;
+import org.springframework.stereotype.Service;
 
 
 import java.util.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * CategoryService - manages task categories.
  * Supports both in-memory (JavaFX) and PostgreSQL-backed (web) operation modes.
  */
+@Service
 public class CategoryService {
     private final Map<Integer, Category> categories = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
