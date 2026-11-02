@@ -1,6 +1,7 @@
 package services;
 
 import models.Tag;
+import org.springframework.stereotype.Component;
 
 
 import java.sql.*;
@@ -12,6 +13,7 @@ import java.util.Optional;
  * PostgresTagDAO - PostgreSQL-backed tag repository with user isolation.
  * All queries are filtered by user_id to ensure data isolation between clients.
  */
+@Component
 public class PostgresTagDAO {
     private final String url;
     private final String user;
