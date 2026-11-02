@@ -2,6 +2,7 @@ package services;
 
 import models.Role;
 import models.User;
+import org.springframework.stereotype.Component;
 
 
 import java.sql.*;
@@ -13,6 +14,7 @@ import java.util.List;
  * Provides CRUD operations directly against the chronos database.
  * Reads connection parameters from Config (config.properties).
  */
+@Component
 public class PostgresUserDAO {
     private final String url;
     private final String user;
@@ -108,7 +110,7 @@ public class PostgresUserDAO {
                 );
                 user.set_created_at(rs.getTimestamp("created_at").toLocalDateTime());
                 user.set_last_active_at(rs.getTimestamp("updated_at").toLocalDateTime());
-                
+
                 // Load assigned task IDs and completed count
                 loadUserTaskData(conn, user);
 
