@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * PostgresUserDAO - PostgreSQL-backed user repository.
@@ -16,19 +17,22 @@ import java.util.List;
  */
 @Component
 public class PostgresUserDAO {
-    private final String url;
-    private final String user;
-    private final String password;
+    private volatile String url;
+    private volatile String user;
+    private volatile String password;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     public PostgresUserDAO() {
-        this(Config.getDbUrl(), Config.getDbUser(), Config.getDbPassword());
+        // Defer DB connection - credentials loaded lazily on first use
     }
 
-    public PostgresUserDAO(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
-        loadDriver();
+    private void ensureInitialized() {
+        if (initialized.compareAndSet(false, true)) {
+            this.url = Config.getDbUrl();
+            this.user = Config.getDbUser();
+            this.password = Config.getDbPassword();
+            loadDriver();
+        }
     }
 
     private void loadDriver() {
@@ -40,6 +44,7 @@ public class PostgresUserDAO {
     }
 
     private Connection getConnection() throws SQLException {
+        ensureInitialized();
         return DriverManager.getConnection(url, user, password);
     }
 
@@ -61,7 +66,6 @@ public class PostgresUserDAO {
                 user.set_created_at(rs.getTimestamp("created_at").toLocalDateTime());
                 user.set_last_active_at(rs.getTimestamp("updated_at").toLocalDateTime());
 
-                // Load assigned task IDs and completed count
                 loadUserTaskData(conn, user);
 
                 users.add(user);
@@ -85,7 +89,6 @@ public class PostgresUserDAO {
                     completedCount++;
                 }
             }
-            // Set completed count directly since assign_task doesn't increment it
             for (int i = 0; i < completedCount; i++) {
                 user.increment_completed_count();
             }
@@ -111,7 +114,6 @@ public class PostgresUserDAO {
                 user.set_created_at(rs.getTimestamp("created_at").toLocalDateTime());
                 user.set_last_active_at(rs.getTimestamp("updated_at").toLocalDateTime());
 
-                // Load assigned task IDs and completed count
                 loadUserTaskData(conn, user);
 
                 return user;
