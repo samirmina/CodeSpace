@@ -89,14 +89,26 @@ public class WebController {
     }
 
     @PostMapping("/login")
-    public RedirectView selectUser(@RequestParam("userId") Integer userId, HttpSession session) {
-        User selected = null;
-        if (userId != null) {
-            Optional<User> u = userService.try_get_user(userId);
-            if (u.isPresent()) selected = u.get();
+    public RedirectView selectUser(@RequestParam("email") String email, HttpSession session) {
+        User u = currentUser(session);
+        if (u != null) return new RedirectView("/timer");
+
+        // Create user on demand if they don't exist
+        Optional<User> existing = userService.get_all_users().stream()
+            .filter(usr -> usr.get_email().equalsIgnoreCase(email.trim()))
+            .findFirst();
+
+        if (existing.isEmpty()) {
+            // Auto-create user with email as name, DEVELOPER role by default
+            String name = email.contains("@") ? email.substring(0, email.indexOf("@")) : email;
+            u = userService.create_user(name, email.trim(), Role.DEVELOPER);
+            System.out.println("✓ Auto-created user: " + u.get_name() + " (" + u.get_email() + ")");
+        } else {
+            u = existing.get();
         }
-        session.setAttribute("currentUser", selected);
-        session.setAttribute("isGuest", selected == null);
+
+        session.setAttribute("currentUser", u);
+        session.setAttribute("isGuest", false);
         return new RedirectView("/timer");
     }
 
