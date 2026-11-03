@@ -15,12 +15,13 @@ import java.util.Optional;
  */
 @Component
 public class PostgresCategoryDAO {
-    private final String url;
-    private final String user;
-    private final String password;
+    private volatile String url;
+    private volatile String user;
+    private volatile String password;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     public PostgresCategoryDAO() {
-        this(Config.getDbUrl(), Config.getDbUser(), Config.getDbPassword());
+        // Defer DB connection - credentials loaded lazily on first use
     }
 
     public PostgresCategoryDAO(String url, String user, String password) {
@@ -39,7 +40,17 @@ public class PostgresCategoryDAO {
     }
 
     private Connection getConnection() throws SQLException {
+        ensureInitialized();
         return DriverManager.getConnection(url, user, password);
+    }
+
+    private void ensureInitialized() {
+        if (initialized.compareAndSet(false, true)) {
+            this.url = Config.getDbUrl();
+            this.user = Config.getDbUser();
+            this.password = Config.getDbPassword();
+            loadDriver();
+        }
     }
 
     public List<Category> getAllCategoriesByUser(long userId) {
