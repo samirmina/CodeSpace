@@ -34,14 +34,8 @@ public class User {
     // Get user ID - returns unique identifier
     public int get_id() { return id; }
 
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public int getId() { return id; }
-
     // Get user name - returns full name
     public String get_name() { return name; }
-
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public String getName() { return name; }
 
     // Set user name - updates full name
     public void set_name(String name) { this.name = name; }
@@ -49,17 +43,11 @@ public class User {
     // Get user email - returns email address
     public String get_email() { return email; }
 
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public String getEmail() { return email; }
-
     // Set user email - updates email address
     public void set_email(String email) { this.email = email; }
 
     // Get user role - returns permission level
     public Role get_role() { return role; }
-
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public Role getRole() { return role; }
 
     // Set user role - updates permission level
     public void set_role(Role role) { this.role = role; }
@@ -67,23 +55,14 @@ public class User {
     // Get assigned task IDs - returns list of assigned task identifiers
     public List<Integer> get_assigned_task_ids() { return assignedTaskIds; }
 
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public List<Integer> getAssignedTaskIds() { return assignedTaskIds; }
-
     // Get creation timestamp - returns when user was created
     public LocalDateTime get_created_at() { return createdAt; }
 
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    // Set creation timestamp - sets when user was created
+    public void set_created_at(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     // Get last active timestamp - returns last activity time
     public LocalDateTime get_last_active_at() { return lastActiveAt; }
-
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public LocalDateTime getLastActiveAt() { return lastActiveAt; }
-
-    // Set creation timestamp - sets when user was created
-    public void set_created_at(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     // Set last active timestamp - sets last activity time
     public void set_last_active_at(LocalDateTime lastActiveAt) { this.lastActiveAt = lastActiveAt; }
@@ -128,21 +107,11 @@ public class User {
         return tasksCompletedCount;
     }
 
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public int getTasksCompletedCount() {
-        return tasksCompletedCount;
-    }
-
     // Get completion rate - returns percentage of completed vs assigned tasks
     public double get_completion_rate() {
         int total = assignedTaskIds.size();
         if (total == 0) return 0.0;
         return (tasksCompletedCount * 100.0) / total;
-    }
-
-    // Standard JavaBean getter for Thymeleaf compatibility
-    public double getCompletionRate() {
-        return get_completion_rate();
     }
 
     // Check if user is admin - returns true if role is ADMIN
