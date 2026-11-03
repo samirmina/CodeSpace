@@ -30,15 +30,15 @@ Chronos is a Java 21 Pomodoro & Task Manager — a Spring Boot web application w
 ├── pom.xml                      ← Maven build
 ├── docker/Dockerfile            ← Docker build for Spring Boot web app
 ├── docker/docker-compose.yml    ← app + Postgres containers
+├── docker/schema.sql              ← Database schema for PostgreSQL
 ├── src/
-│   ├── Main.java                ← JavaFX desktop entry point
 │   ├── web/
 │   │   ├── ChronosWebApplication.java   ← Spring Boot entry point
 │   │   ├── controller/
 │   │   │   └── WebController.java       ← all UI routes, HTML via renderer
+│   │   │   └── GlobalExceptionHandler.java   ← exception handling
 │   │   └── renderer/
 │   │       └── HtmlRenderer.java        ← programmatic HTML + inline CSS
-│   ├── jfx/                       ← JavaFX desktop GUI views
 │   ├── models/                    ← data models (User, Task, Pomodoro, etc.)
 │   ├── services/                  ← business logic (TaskService, UserService, etc.)
 │   └── utils/                     ← file storage helpers
