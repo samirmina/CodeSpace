@@ -127,13 +127,12 @@ public class HtmlRenderer {
             s(sb, "<p>Chronos is a Pomodoro &amp; Task Manager built entirely in Java. Track your focus sessions, manage tasks, and view productivity reports — all in a clean, professional interface.</p>\n");
             s(sb, "<h3>Key Features</h3>\n");
             s(sb, "<ul>\n<li><strong>&#128325; Pomodoro Timer</strong> — timed focus sessions with task selection and custom duration</li>\n<li><strong>&#128391; Task Management</strong> — CRUD tasks with priority, status, tags, due dates, and user assignment</li>\n<li><strong>&#128103; Multi-User</strong> — role-based access (Admin, Developer, Manager) with per-user data isolation</li>\n<li><strong>&#128198; Sessions</strong> — track every pomodoro session and view active timers</li>\n<li><strong>&#128197; Reports</strong> — completion rates, top performers, and task status breakdowns</li>\n<li><strong>&#9881; Settings</strong> — theme, default duration, notifications, auto-start, and daily focus goals</li>\n</ul>\n");
-            s(sb, "<p>Get started by selecting your profile below.</p>\n");
+            s(sb, "<div class=\"card\" style=\"background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 1.5rem; margin-top: 1rem;\">\n");
+            s(sb, "<h3>Sign In</h3>\n");
+            s(sb, "<p>Enter your email to sign in. If you don't have an account yet, one will be created for you automatically.</p>\n");
             s(sb, "<form method=\"post\" action=\"/login\">\n");
-            s(sb, "<div class=\"form-group\">\n<label>Select Your Profile</label>\n<select name=\"userId\" class=\"form-control\" required>\n");
-            s(sb, "<option value=\"\">-- Select a user --</option>\n");
-            s(sb, "<option value=\"0\">Guest (read-only)</option>\n");
-            s(sb, "</select>\n</div>\n");
-            s(sb, "<button type=\"submit\" class=\"btn btn-primary\" style=\"width: 100%;\">Enter Chronos</button>\n");
+            s(sb, "<div class=\"form-group\">\n<label>Email Address</label><input type=\"email\" name=\"email\" class=\"form-control\" placeholder=\"you@example.com\" required/></div>\n");
+            s(sb, "<button type=\"submit\" class=\"btn btn-primary\" style=\"width: 100%;\">Sign In</button>\n");
             s(sb, "</form>\n");
             s(sb, "</div>\n");
         } else {
@@ -171,19 +170,8 @@ public class HtmlRenderer {
             s(sb, "<div class=\"empty-state\">No users available. Please add users first.</div>\n");
         } else {
             s(sb, "<form method=\"post\" action=\"/login\">\n");
-            s(sb, "<div class=\"form-group\">\n<label>Select Your Profile</label>\n<select name=\"userId\" class=\"form-control\" required>\n");
-            s(sb, "<option value=\"\">-- Select a user --</option>\n");
-            for (User user : users) {
-                String roleBadge = switch (user.get_role()) {
-                    case ADMIN -> "badge badge-status-pending";
-                    case DEVELOPER -> "badge badge-status-in-progress";
-                    case MANAGER -> "badge badge-status-completed";
-                    default -> "badge badge-status-cancelled";
-                };
-                s(sb, "<option value=\"" + user.get_id() + "\">" + escapeHtml(user.get_name()) + " <span class=\"" + roleBadge + "\">" + user.get_role() + "</span></option>\n");
-            }
-            s(sb, "</select>\n</div>\n");
-            s(sb, "<button type=\"submit\" class=\"btn btn-primary\" style=\"width: 100%;\">Enter Chronos</button>\n");
+            s(sb, "<div class=\"form-group\">\n<label>Email Address</label><input type=\"email\" name=\"email\" class=\"form-control\" placeholder=\"you@example.com\" required/></div>\n");
+            s(sb, "<button type=\"submit\" class=\"btn btn-primary\" style=\"width: 100%;\">Sign In</button>\n");
             s(sb, "</form>\n");
         }
 
