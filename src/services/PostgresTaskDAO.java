@@ -12,6 +12,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * PostgresTaskDAO - PostgreSQL-backed task repository with user isolation.
@@ -19,12 +20,13 @@ import java.util.List;
  */
 @Component
 public class PostgresTaskDAO {
-    private final String url;
-    private final String user;
-    private final String password;
+    private volatile String url;
+    private volatile String user;
+    private volatile String password;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     public PostgresTaskDAO() {
-        this(Config.getDbUrl(), Config.getDbUser(), Config.getDbPassword());
+        // Defer DB connection - credentials loaded lazily on first use
     }
 
     public PostgresTaskDAO(String url, String user, String password) {
@@ -43,7 +45,17 @@ public class PostgresTaskDAO {
     }
 
     private Connection getConnection() throws SQLException {
+        ensureInitialized();
         return DriverManager.getConnection(url, user, password);
+    }
+
+    private void ensureInitialized() {
+        if (initialized.compareAndSet(false, true)) {
+            this.url = Config.getDbUrl();
+            this.user = Config.getDbUser();
+            this.password = Config.getDbPassword();
+            loadDriver();
+        }
     }
 
     public List<Task> getTasksByUserId(long userId) {
